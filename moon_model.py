@@ -31,8 +31,14 @@ class MoonModel:
     def x(self, list_value):
         self._mX = list_value
 
-        if self._mX > self._mY:
-            self._mRowCount = len(self._mX) + 1
+        self._mY.append(0)
+        print("3x", len(self._mX), len(self._mY))
+
+        self._mRowCount = len(self._mX) + 1
+        print("4x", self._mRowCount)
+        # if self._mX > self._mY:
+        #     self._mRowCount = len(self._mX) + 1
+        #     print("4x", self._mRowCount)
 
         self.notifyObservers()
 
@@ -40,10 +46,20 @@ class MoonModel:
     def y(self, list_value):
         self._mY = list_value
 
-        if self._mY > self._mX:
-            self._mRowCount = len(self._mY) + 1
+        self._mX.append(0)
+        print("3y", len(self._mX), len(self._mY))
+
+        self._mRowCount = len(self._mY) + 1
+        print("4y", self._mRowCount)
+
+        # if len(self._mY > self._mX:
+        #     self._mRowCount = len(self._mY) + 1
+        #     print("4y", self._mRowCount)
 
         self.notifyObservers()
+
+    # def appendToX(self, value):
+    #     self._mx.append(value)
 
     def addObserver(self, in_observer):
         self._mObservers.append(in_observer)

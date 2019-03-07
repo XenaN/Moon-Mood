@@ -4,7 +4,7 @@ from PyQt5 import QtCore
 from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
-
+from PyQt5.QtWidgets import QTableWidget
 
 class MoonObserver(metaclass=ABCMeta):
     """
@@ -84,11 +84,17 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         Метод вызывается при изменении модели.
         Изменяет количество строк.
         """
-        print(3)
+        # print(5)
         row_count = int(self._mModel.rowCount)
+        # print(6)
         self.ui.tableWidget.setRowCount(row_count)
+        # print(7)
         for j in range(2):
-            item = self.QtWidgets.QTableWidgetItem()
-            self.tableWidget.setItem(row_count, j, item)
+            # print(7, 1, j)
+            item = QTableWidgetItem()
+            # print(7, 2, j)
+            self.ui.tableWidget.setItem(row_count, j, item)
+            # print(7, 3, j)
+        # print(8)
 
 

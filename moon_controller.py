@@ -21,20 +21,23 @@ class MoonController:
     def onItemChanged(self, item):
         # print(int(item.data(Qt.DisplayRole)))
         # print(str(item.data(QtCore.Qt.DisplayRole)))
-        print(str(item.data(0))) # надо преобразовать в дисплей роль
+        print(2, str(item.data(0)))
 
         if item.column() == 0:
-            print(2)
-            if int(item.data(Qt.DisplayRole)) in self._mModel.x:
+            if len(self._mModel.x) > item.row():
                 self._mModel.x[item.row()] = int(item.data(Qt.DisplayRole))
             else:
-                self._mModel.x.append(int(item.data(Qt.DisplayRole)))
+                a = self._mModel.x
+                a.append(int(item.data(Qt.DisplayRole)))
+                self._mModel.x = a
 
         if item.column() == 1:
-            if int(item.data(Qt.DisplayRole)) in self._mModel.y:
+            if len(self._mModel.y) > item.row():
                 self._mModel.y[item.row()] = int(item.data(Qt.DisplayRole))
             else:
-                self._mModel.y.append(int(item.data(Qt.DisplayRole)))
+                a = self._mModel.y
+                a.append(int(item.data(Qt.DisplayRole)))
+                self._mModel.y = a
 
     # def setX(self):
     #     """
