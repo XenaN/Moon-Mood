@@ -51,18 +51,8 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         # название программы
         self.setWindowTitle("First project")
 
-        # устанавливаем валидаторы полей ввода данных
-        # self.validator()
-
         # отрисовываем линии а графике
         self.update_graph()
-
-    # def validator(self):
-    #     rx = QtCore.QRegExp("-?[0-9]*[.{0}]?[0-9]*")
-    #     val = QtGui.QRegExpValidator(rx, self)
-    #
-    #     self.ui.le_x.setValidator(val)
-    #     self.ui.le_y.setValidator(val)
 
         # связываем событие завершения редактирования с методом контроллера
         print(1)
