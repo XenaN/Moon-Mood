@@ -4,7 +4,6 @@ from PyQt5 import QtCore
 from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
-from PyQt5.QtWidgets import QTableWidget
 
 class MoonObserver(metaclass=ABCMeta):
     """
@@ -51,21 +50,12 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         # название программы
         self.setWindowTitle("First project")
 
-        # отрисовываем линии а графике
-        self.update_graph()
-
         # связываем событие завершения редактирования с методом контроллера
         print(1)
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged)
 
     def update_graph(self):
-        # for n in range(len(self._mModel.y)):
-        #     self._mModel.y.append(float(self.tableWidget.item(n, 0).text()))
-        # for n in range(len(self._mModel.x)):
-        #     self._mModel.x.append(float(self.tableWidget.item(n, 1).text()))
-
-        # self.MplWidget.canvas.axes.plot(self._mModel.x, self._mModel.y, 'go--', linewidth=2, markersize=5)
-        # self.MplWidget.canvas.draw()
+        self.ui.MplWidget.canvas.axes.clear()
         self.ui.MplWidget.canvas.axes.plot(self._mModel.x, self._mModel.y, 'go--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
 
@@ -74,17 +64,14 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         Метод вызывается при изменении модели.
         Изменяет количество строк.
         """
-        # print(5)
+
         row_count = int(self._mModel.rowCount)
-        # print(6)
         self.ui.tableWidget.setRowCount(row_count)
-        # print(7)
         for j in range(2):
-            # print(7, 1, j)
             item = QTableWidgetItem()
-            # print(7, 2, j)
             self.ui.tableWidget.setItem(row_count, j, item)
-            # print(7, 3, j)
-        # print(8)
+
+
+
 
 

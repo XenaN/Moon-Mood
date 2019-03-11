@@ -23,26 +23,33 @@ class MoonController(QObject):
         self._mView.show()
 
     def onItemChanged(self, item):
-        if self.validate(item) is True:
-            # print(2, str(item.data(0)))
+        new_data = item.data(Qt.DisplayRole)
+        if new_data == '':
+            new_data = None
+        else:
+            new_data = int(item.data(Qt.DisplayRole))
+
+        if self.validate(item) is True or new_data is None:
 
             if item.column() == 0:
                 if len(self._mModel.x) > item.row():
-                    self._mModel.x[item.row()] = int(item.data(Qt.DisplayRole))
+                    self._mModel.x[item.row()] = new_data
                 else:
                     a = self._mModel.x
-                    a.append(int(item.data(Qt.DisplayRole)))
+                    a.append(new_data)
                     self._mModel.x = a
 
             if item.column() == 1:
                 if len(self._mModel.y) > item.row():
-                    self._mModel.y[item.row()] = int(item.data(Qt.DisplayRole))
+                    self._mModel.y[item.row()] = new_data
                 else:
                     a = self._mModel.y
-                    a.append(int(item.data(Qt.DisplayRole)))
+                    a.append(new_data)
                     self._mModel.y = a
         else:
-            item.setText('')
+            item.setText(None)
+
+        self._mView.update_graph()
 
     # устанавливаем валидатор поля ввода данных
     def validate(self, item):
@@ -52,19 +59,3 @@ class MoonController(QObject):
         p = 0
         result = self.validator.validate(i, p)
         return result[0] == 2
-
-    # def setX(self):
-    #     """
-    #     При завершении редактирования поля ввода данных для X,
-    #     контроллер изменяет свойство x модели.
-    #     """
-    #     x = self._mView.tableWidget.item(n, 0).text()
-    #     self._mModel.x = float(x)
-    #
-    # def setY(self):
-    #     """
-    #     При завершении редактирования поля ввода данных для Y,
-    #     контроллер изменяет свойство y модели.
-    #     """
-    #     y = self._mView.ui.le_y.text()
-    #     self._mModel.y = float(y)
