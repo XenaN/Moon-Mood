@@ -48,7 +48,7 @@ class MoonController(QObject):
                     self._mModel.y = a
         else:
             item.setText(None)
-
+        self._mModel.cleanerRow()
         self._mView.update_graph()
 
     # устанавливаем валидатор поля ввода данных

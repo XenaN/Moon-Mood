@@ -47,6 +47,17 @@ class MoonModel:
 
         self.notifyObservers()
 
+    def cleanerRow(self):
+        if self._mRowCount > 2:
+            while self._mX[-1] is None and self._mY[1] is None:
+                self._mRowCount -= 1
+                self._mX.pop()
+                self._mY.pop()
+        if self._mRowCount == 2:
+            if self._mX[0] is None and self._mY[0] is None:
+                self._mRowCount = 1
+        self.notifyObservers()
+
     def addObserver(self, in_observer):
         self._mObservers.append(in_observer)
 

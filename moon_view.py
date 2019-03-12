@@ -48,10 +48,9 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         self._mModel.addObserver(self)
 
         # название программы
-        self.setWindowTitle("First project")
+        self.setWindowTitle("Moon-Mood")
 
         # связываем событие завершения редактирования с методом контроллера
-        print(1)
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged)
 
     def update_graph(self):
@@ -70,6 +69,7 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         for j in range(2):
             item = QTableWidgetItem()
             self.ui.tableWidget.setItem(row_count, j, item)
+
 
 
 
