@@ -58,16 +58,16 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
     def update_graph(self):
         x = []
         for i in self._mModel.x:
-            a = i.toString('dd.MM.yy')
-            x.append(datestr2num(a))
+            x.append(i.toString('dd.MM.yy'))
+            # x.append(datestr2num(a))
 
         self.ui.MplWidget.canvas.axes.clear()
 
-        for j in self._mModel.y:
-            if j is None:
-                return
+        # for j in self._mModel.y:
+        #     if j is None:
+        #         return
 
-        self.ui.MplWidget.canvas.axes.plot_date(x, self._mModel.y, fmt='o', tz=None, xdate=True, ydate=False, linestyle='--', linewidth=2, markersize=5)
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.y, 'go--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
 
 
