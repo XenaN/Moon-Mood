@@ -5,6 +5,8 @@ from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
 
+from matplotlib.dates import datestr2num
+
 class MoonObserver(metaclass=ABCMeta):
     """
     Абстрактный суперкласс для всех наблюдателей.
@@ -54,9 +56,20 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged)
 
     def update_graph(self):
+        x = []
+        for i in self._mModel.x:
+            a = i.toString('dd.MM.yy')
+            x.append(datestr2num(a))
+
         self.ui.MplWidget.canvas.axes.clear()
-        self.ui.MplWidget.canvas.axes.plot(self._mModel.x, self._mModel.y, 'go--', linewidth=2, markersize=5)
+
+        for j in self._mModel.y:
+            if j is None:
+                return
+
+        self.ui.MplWidget.canvas.axes.plot_date(x, self._mModel.y, fmt='o', tz=None, xdate=True, ydate=False, linestyle='--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
+
 
     def dataChanged(self):
         """

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QObject
+from PyQt5.QtCore import Qt, QObject, QDate
 from PyQt5.QtGui import QRegExpValidator, QValidator, QIntValidator
 
 from moon_view import MoonView
@@ -20,34 +20,41 @@ class MoonController(QObject):
 
         self.validator = QIntValidator(-10, 10, self)
 
+        self.date = QDate()
+
         self._mView.show()
 
     def onItemChanged(self, item):
         new_data = item.data(Qt.DisplayRole)
-        if new_data == '':
-            new_data = None
-        else:
-            new_data = int(item.data(Qt.DisplayRole))
 
-        if self.validate(item) is True or new_data is None:
-
-            if item.column() == 0:
+        if item.column() == 0:
+            self.date = self.date.fromString(new_data, "dd.MM.yyyy")
+            if self.date.isValid() is False:
+                item.setText(None)
+            else:
                 if len(self._mModel.x) > item.row():
-                    self._mModel.x[item.row()] = new_data
+                    self._mModel.x[item.row()] = self.date
                 else:
                     a = self._mModel.x
-                    a.append(new_data)
+                    a.append(self.date)
                     self._mModel.x = a
 
-            if item.column() == 1:
+        if item.column() == 1:
+            if new_data == '':
+                new_data = None
+            else:
+                new_data = int(item.data(Qt.DisplayRole))
+
+            if self.validate(item) is True or new_data is None:
                 if len(self._mModel.y) > item.row():
                     self._mModel.y[item.row()] = new_data
                 else:
                     a = self._mModel.y
                     a.append(new_data)
                     self._mModel.y = a
-        else:
-            item.setText(None)
+            else:
+                item.setText(None)
+
         self._mModel.cleanerRow()
         self._mView.update_graph()
 
