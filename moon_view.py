@@ -69,7 +69,7 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         # print('graph end')
 
 
-    def dataChanged(self):  # переименовать на RowCountChanged
+    def rowCountChanged(self):
         """
         Метод вызывается при изменении модели.
         Изменяет количество строк.
@@ -81,4 +81,12 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         z = row_count - 1
         item = QTableWidgetItem(self._mModel.date[z].toString('dd.MM.yyyy'))
         self.ui.tableWidget.setItem(row_count-1, 0, item)
+        self.ui.tableWidget.blockSignals(False)
+
+    def dataChanged(self, item_row):
+        self.ui.tableWidget.blockSignals(True)
+        row_count = int(self._mModel.rowCount)
+        for j in range(item_row+1, row_count):
+            item = QTableWidgetItem(self._mModel.date[j].toString('dd.MM.yyyy'))
+            self.ui.tableWidget.setItem(j, 0, item)
         self.ui.tableWidget.blockSignals(False)

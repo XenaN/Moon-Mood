@@ -34,7 +34,12 @@ class MoonController(QObject):
                 item.setText(None)
             else:
                 if len(self._mModel.date) > item.row():
-                    self._mModel.x[item.row()] = self.c_date
+                    a = self._mModel.date
+                    a[item.row()] = self.c_date
+                    for j in range(item.row()+1, len(a)):
+                        a[j] = a[j-1].addDays(1)
+                    self._mModel.date = a
+                    self._mView.dataChanged(item.row())
                 else:
                     a = self._mModel.date
                     a.append(self.c_date)

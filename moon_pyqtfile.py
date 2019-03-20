@@ -56,6 +56,14 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
+        # _translate = QtCore.QCoreApplication.translate
+        # MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        # item = self.tableWidget.horizontalHeaderItem(0)
+        # item.setText(_translate("MainWindow", "Moon"))
+        # item = self.tableWidget.horizontalHeaderItem(1)
+        # item.setText(_translate("MainWindow", "Mood"))
+
+
         # self.retranslateUi(MainWindow)
         # QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

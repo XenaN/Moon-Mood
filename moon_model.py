@@ -30,12 +30,12 @@ class MoonModel:
     @date.setter
     def date(self, list_value):
         self._mDate = list_value
-        # print(self._mDate)
+        print(self._mDate)
 
         if self._mRowCount == 1:
             self._mY.append(None)
 
-        # self.notifyObservers()
+        self.notifyObservers()
 
     @y.setter
     def y(self, list_value):
@@ -71,4 +71,4 @@ class MoonModel:
     def notifyObservers(self):
         # print('observers')
         for x in self._mObservers:
-            x.dataChanged()
+            x.rowCountChanged()
