@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QMutex
 
 from abc import ABCMeta, abstractmethod
 
@@ -53,25 +54,22 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         self.setWindowTitle("Moon-Mood")
 
         # связываем событие завершения редактирования с методом контроллера
-        self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged)
+        self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
     def update_graph(self):
+        # print('graph')
         x = []
-        for i in self._mModel.x:
+        for i in self._mModel.date:
             x.append(i.toString('dd.MM.yy'))
-            # x.append(datestr2num(a))
 
         self.ui.MplWidget.canvas.axes.clear()
 
-        # for j in self._mModel.y:
-        #     if j is None:
-        #         return
-
         self.ui.MplWidget.canvas.axes.plot(x, self._mModel.y, 'go--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
+        # print('graph end')
 
 
-    def dataChanged(self):
+    def dataChanged(self):  # переименовать на RowCountChanged
         """
         Метод вызывается при изменении модели.
         Изменяет количество строк.
@@ -79,12 +77,8 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
 
         row_count = int(self._mModel.rowCount)
         self.ui.tableWidget.setRowCount(row_count)
-        for j in range(2):
-            item = QTableWidgetItem()
-            self.ui.tableWidget.setItem(row_count, j, item)
-
-
-
-
-
-
+        self.ui.tableWidget.blockSignals(True)
+        z = row_count - 1
+        item = QTableWidgetItem(self._mModel.date[z].toString('dd.MM.yyyy'))
+        self.ui.tableWidget.setItem(row_count-1, 0, item)
+        self.ui.tableWidget.blockSignals(False)

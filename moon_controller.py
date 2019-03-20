@@ -20,24 +20,25 @@ class MoonController(QObject):
 
         self.validator = QIntValidator(-10, 10, self)
 
-        self.date = QDate()
+        self.c_date = QDate()
 
         self._mView.show()
 
     def onItemChanged(self, item):
+        # print(item)
         new_data = item.data(Qt.DisplayRole)
 
         if item.column() == 0:
-            self.date = self.date.fromString(new_data, "dd.MM.yyyy")
-            if self.date.isValid() is False:
+            self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")
+            if self.c_date.isValid() is False:
                 item.setText(None)
             else:
-                if len(self._mModel.x) > item.row():
-                    self._mModel.x[item.row()] = self.date
+                if len(self._mModel.date) > item.row():
+                    self._mModel.x[item.row()] = self.c_date
                 else:
-                    a = self._mModel.x
-                    a.append(self.date)
-                    self._mModel.x = a
+                    a = self._mModel.date
+                    a.append(self.c_date)
+                    self._mModel.date = a
 
         if item.column() == 1:
             if new_data == '':
@@ -46,12 +47,9 @@ class MoonController(QObject):
                 new_data = int(item.data(Qt.DisplayRole))
 
             if self.validate(item) is True or new_data is None:
-                if len(self._mModel.y) > item.row():
-                    self._mModel.y[item.row()] = new_data
-                else:
-                    a = self._mModel.y
-                    a.append(new_data)
-                    self._mModel.y = a
+                a = self._mModel.y
+                a[item.row()] = new_data
+                self._mModel.y = a
             else:
                 item.setText(None)
 

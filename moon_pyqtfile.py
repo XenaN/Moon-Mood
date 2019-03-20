@@ -38,9 +38,9 @@ class Ui_MainWindow(object):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
 
-        for j in range(2):
-            item = QtWidgets.QTableWidgetItem()
-            self.tableWidget.setItem(0, j, item)
+        # for j in range(2):
+        #     item = QtWidgets.QTableWidgetItem()
+        #     self.tableWidget.setItem(0, j, item)
 
         # item = QtWidgets.QTableWidgetItem()
         # self.tableWidget.setHorizontalHeaderItem(0, item)

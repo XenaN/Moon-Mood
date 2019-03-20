@@ -10,14 +10,14 @@ class MoonModel:
     """
 
     def __init__(self):
-        self._mX = []  # значения столбца Х
+        self._mDate = []  # значения столбца Х
         self._mY = []  # значения столбца Y
         self._mRowCount = 1  # список строк в таблице
         self._mObservers = []  # список наблюдателей
 
     @property
-    def x(self):
-        return self._mX
+    def date(self):
+        return self._mDate
 
     @property
     def y(self):
@@ -27,36 +27,40 @@ class MoonModel:
     def rowCount(self):
         return self._mRowCount
 
-    @x.setter
-    def x(self, list_value):
-        self._mX = list_value
+    @date.setter
+    def date(self, list_value):
+        self._mDate = list_value
+        # print(self._mDate)
 
-        self._mY.append(None)
+        if self._mRowCount == 1:
+            self._mY.append(None)
 
-        self._mRowCount = len(self._mX) + 1
-
-        self.notifyObservers()
+        # self.notifyObservers()
 
     @y.setter
     def y(self, list_value):
         self._mY = list_value
 
-        self._mX.append(None)
-
         self._mRowCount = len(self._mY) + 1
+
+        date = self._mDate.copy()
+        b = date[-1].addDays(1)
+        self._mDate.append(b)
+        self._mY.append(None)
 
         self.notifyObservers()
 
     def cleanerRow(self):
         if self._mRowCount > 2:
-            while self._mX[-1] is None and self._mY[1] is None:
+            while self._mY[-2] is None and self._mY[-1] is None:
                 self._mRowCount -= 1
-                self._mX.pop()
+                self._mDate.pop()
                 self._mY.pop()
+                self.notifyObservers()
         if self._mRowCount == 2:
-            if self._mX[0] is None and self._mY[0] is None:
+            if self._mY[0] is None:
                 self._mRowCount = 1
-        self.notifyObservers()
+                self.notifyObservers()
 
     def addObserver(self, in_observer):
         self._mObservers.append(in_observer)
@@ -65,5 +69,6 @@ class MoonModel:
         self._mObservers.remove(in_observer)
 
     def notifyObservers(self):
+        # print('observers')
         for x in self._mObservers:
             x.dataChanged()
