@@ -42,10 +42,10 @@ class Ui_MainWindow(object):
         #     item = QtWidgets.QTableWidgetItem()
         #     self.tableWidget.setItem(0, j, item)
 
-        # item = QtWidgets.QTableWidgetItem()
-        # self.tableWidget.setHorizontalHeaderItem(0, item)
-        # item = QtWidgets.QTableWidgetItem()
-        # self.tableWidget.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(1, item)
         self.horizontalLayout.addWidget(self.tableWidget)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -56,12 +56,13 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        # _translate = QtCore.QCoreApplication.translate
-        # MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        # item = self.tableWidget.horizontalHeaderItem(0)
-        # item.setText(_translate("MainWindow", "Moon"))
-        # item = self.tableWidget.horizontalHeaderItem(1)
-        # item.setText(_translate("MainWindow", "Mood"))
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        item = self.tableWidget.horizontalHeaderItem(0)
+        print(item)
+        item.setText(_translate("MainWindow", "Date"))
+        item = self.tableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Mood"))
 
 
         # self.retranslateUi(MainWindow)
