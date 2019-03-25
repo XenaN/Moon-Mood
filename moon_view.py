@@ -63,7 +63,7 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
             x.append(i.toString('dd.MM.yy'))
 
         self.ui.MplWidget.canvas.axes.clear()
-
+        self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
         self.ui.MplWidget.canvas.axes.plot(x, self._mModel.y, 'go--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
         # print('graph end')
