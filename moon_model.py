@@ -30,17 +30,17 @@ class MoonModel:
     @date.setter
     def date(self, list_value):
         self._mDate = list_value
-        print(self._mDate)
 
-        if self._mRowCount == 1:
+        if self._mRowCount == 1 and self._mY == []:
             self._mY.append(None)
-
-        self.notifyObservers()
+        # self.notifyObservers()
 
     @y.setter
     def y(self, list_value):
         self._mY = list_value
+        print(self._mY)
 
+    def addDate(self):
         self._mRowCount = len(self._mY) + 1
 
         date = self._mDate.copy()
@@ -48,6 +48,7 @@ class MoonModel:
         self._mDate.append(b)
         self._mY.append(None)
 
+        print(self._mDate, self._mY, self._mRowCount)
         self.notifyObservers()
 
     def cleanerRow(self):
@@ -60,7 +61,10 @@ class MoonModel:
         if self._mRowCount == 2:
             if self._mY[0] is None:
                 self._mRowCount = 1
+                self._mDate = [self._mDate[0]]
+                self._mY = [self._mY[0]]
                 self.notifyObservers()
+
 
     def addObserver(self, in_observer):
         self._mObservers.append(in_observer)

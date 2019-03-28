@@ -18,7 +18,7 @@ class MoonController(QObject):
         self._mModel = in_model
         self._mView = MoonView(self, self._mModel)
 
-        self.validator = QIntValidator(-10, 10, self)
+        self.validator = QIntValidator(-10, 10, self)  # точка!!!
 
         self.c_date = QDate()
 
@@ -39,12 +39,13 @@ class MoonController(QObject):
                     for j in range(item.row()+1, len(a)):
                         a[j] = a[j-1].addDays(1)
                     self._mModel.date = a
-                    self._mView.dataChanged(item.row())
+                    print(self._mModel.date, self._mModel.y)
+                    if len(self._mModel.date) > 1:
+                        self._mView.dataChanged(item.row())
                 else:
                     a = self._mModel.date
                     a.append(self.c_date)
                     self._mModel.date = a
-
         if item.column() == 1:
             if new_data == '':
                 new_data = None
@@ -53,13 +54,16 @@ class MoonController(QObject):
 
             if self.validate(item) is True or new_data is None:
                 a = self._mModel.y
-                a[item.row()] = new_data
+                a[item.row()] = new_data # проверить в ручную вызывается ли сеттер при изменение одного значения списка
                 self._mModel.y = a
+                # self._mModel.y[item.row()] = new_data
+                if self.checkNextRow(item) is True:  # метод проверить последняя строка заполнена ли если заполнена
+                    self._mModel.addDate()  # вызвать метод добавления строк
             else:
                 item.setText(None)
 
         self._mModel.cleanerRow()
-        self._mView.update_graph()
+        self._mView.updateGraph()
 
     # устанавливаем валидатор поля ввода данных
     def validate(self, item):
@@ -69,3 +73,9 @@ class MoonController(QObject):
         p = 0
         result = self.validator.validate(i, p)
         return result[0] == 2
+
+    def checkNextRow(self, item):
+        if (item.row()+1) == self._mModel.rowCount:
+            return True
+        else:
+            return False

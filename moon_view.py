@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
 
+import numpy as np
 from matplotlib.dates import datestr2num
 
 class MoonObserver(metaclass=ABCMeta):
@@ -56,11 +57,20 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         # связываем событие завершения редактирования с методом контроллера
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
-    def update_graph(self):
+    def updateGraph(self):
         # print('graph')
         x = []
         for i in self._mModel.date:
             x.append(i.toString('dd.MM.yy'))
+
+        # if len(self._mModel.y) == 1 or self._mModel.y[0] is None:
+        #     self.ui.MplWidget.canvas.axes.tick_params(
+        #                                 axis='x',  # changes apply to the x-axis
+        #                                 which='both',  # both major and minor ticks are affected
+        #                                 bottom=False,  # ticks along the bottom edge are off
+        #                                 top=False,  # ticks along the top edge are off
+        #                                 labelbottom=False)
+        # self.ui.MplWidget.update()
 
         self.ui.MplWidget.canvas.axes.clear()
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)

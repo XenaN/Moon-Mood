@@ -25,6 +25,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.MplWidget.sizePolicy().hasHeightForWidth())
         self.MplWidget.setSizePolicy(sizePolicy)
         self.MplWidget.setObjectName("MplWidget")
+        self.MplWidget.setMinimumSize(QtCore.QSize(500, 300))
         self.horizontalLayout.addWidget(self.MplWidget)
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
@@ -59,7 +60,6 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         item = self.tableWidget.horizontalHeaderItem(0)
-        print(item)
         item.setText(_translate("MainWindow", "Date"))
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Mood"))
