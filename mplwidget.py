@@ -66,5 +66,3 @@ class MplWidget(QWidget):
         l2 = l1 + np.diff(self.lims) * self.step
         self.canvas.axes.set_xlim(l1, l2)
 
-        # self.canvas.draw_idle()
-

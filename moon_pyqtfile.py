@@ -39,10 +39,6 @@ class Ui_MainWindow(object):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
 
-        # for j in range(2):
-        #     item = QtWidgets.QTableWidgetItem()
-        #     self.tableWidget.setItem(0, j, item)
-
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
@@ -63,21 +59,4 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Date"))
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Mood"))
-
-
-        # self.retranslateUi(MainWindow)
-        # QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    # def retranslateUi(self, MainWindow):
-    #     _translate = QtCore.QCoreApplication.translate
-    #     MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-    #
-    #     x = 10
-    #     for i in range(x):
-    #         item = self.tableWidget.verticalHeaderItem(i)
-    #         item.setText(_translate("MainWindow", str(i + 1)))
-    #     item = self.tableWidget.horizontalHeaderItem(0)
-    #     item.setText(_translate("MainWindow", "Moon"))
-    #     item = self.tableWidget.horizontalHeaderItem(1)
-    #     item.setText(_translate("MainWindow", "Mood"))
 

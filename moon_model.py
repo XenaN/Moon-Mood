@@ -10,59 +10,35 @@ class MoonModel:
     """
 
     def __init__(self):
-        self._mDate = []  # значения столбца Х
-        self._mY = []  # значения столбца Y
-        self._mRowCount = 1  # список строк в таблице
+        self.Date = []  # значения столбца Х
+        self.Y = []  # значения столбца Y
+        self.RowCount = 1  # список строк в таблице
         self._mObservers = []  # список наблюдателей
 
-    @property
-    def date(self):
-        return self._mDate
-
-    @property
-    def y(self):
-        return self._mY
-
-    @property
-    def rowCount(self):
-        return self._mRowCount
-
-    @date.setter
-    def date(self, list_value):
-        self._mDate = list_value
-
-        if self._mRowCount == 1 and self._mY == []:
-            self._mY.append(None)
-        # self.notifyObservers()
-
-    @y.setter
-    def y(self, list_value):
-        self._mY = list_value
-        print(self._mY)
-
     def addDate(self):
-        self._mRowCount = len(self._mY) + 1
+        self.RowCount = len(self.Y) + 1
 
-        date = self._mDate.copy()
+        date = self.Date.copy()
         b = date[-1].addDays(1)
-        self._mDate.append(b)
-        self._mY.append(None)
+        self.Date.append(b)
+        self.Y.append(None)
 
-        print(self._mDate, self._mY, self._mRowCount)
         self.notifyObservers()
 
     def cleanerRow(self):
-        if self._mRowCount > 2:
-            while self._mY[-2] is None and self._mY[-1] is None:
-                self._mRowCount -= 1
-                self._mDate.pop()
-                self._mY.pop()
+        # есть баг с удалением строк вначале таблицы
+        if self.RowCount > 2:
+            while self.Y[-2] is None and self.Y[-1] is None:
+                self.RowCount -= 1
+                self.Date.pop()
+                self.Y.pop()
+                # print(self.Date, self.Y, self.RowCount)
                 self.notifyObservers()
-        if self._mRowCount == 2:
-            if self._mY[0] is None:
-                self._mRowCount = 1
-                self._mDate = [self._mDate[0]]
-                self._mY = [self._mY[0]]
+        if self.RowCount == 2:
+            if self.Y[0] is None:
+                self.RowCount = 1
+                self.Date = [self.Date[0]]
+                self.Y = [self.Y[0]]
                 self.notifyObservers()
 
 

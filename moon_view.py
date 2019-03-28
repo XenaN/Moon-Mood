@@ -59,22 +59,25 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
 
     def updateGraph(self):
         # print('graph')
+        # print(self._mModel.Date, self._mModel.Y)
         x = []
-        for i in self._mModel.date:
-            x.append(i.toString('dd.MM.yy'))
-
-        # if len(self._mModel.y) == 1 or self._mModel.y[0] is None:
-        #     self.ui.MplWidget.canvas.axes.tick_params(
-        #                                 axis='x',  # changes apply to the x-axis
-        #                                 which='both',  # both major and minor ticks are affected
-        #                                 bottom=False,  # ticks along the bottom edge are off
-        #                                 top=False,  # ticks along the top edge are off
-        #                                 labelbottom=False)
-        # self.ui.MplWidget.update()
-
+        for i in self._mModel.Date:
+            if i is not None:
+                x.append(i.toString('dd.MM.yy'))
+            else:
+                x.append(None)
         self.ui.MplWidget.canvas.axes.clear()
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
-        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.y, 'go--', linewidth=2, markersize=5)
+
+        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:
+            self.ui.MplWidget.canvas.axes.tick_params(
+                                        axis='x',  # changes apply to the x-axis
+                                        which='both',  # both major and minor ticks are affected
+                                        bottom=False,  # ticks along the bottom edge are off
+                                        top=False,  # ticks along the top edge are off
+                                        labelbottom=False)
+
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)
         self.ui.MplWidget.canvas.draw()
         # print('graph end')
 
@@ -85,18 +88,18 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         Изменяет количество строк.
         """
 
-        row_count = int(self._mModel.rowCount)
+        row_count = int(self._mModel.RowCount)
         self.ui.tableWidget.setRowCount(row_count)
         self.ui.tableWidget.blockSignals(True)
         z = row_count - 1
-        item = QTableWidgetItem(self._mModel.date[z].toString('dd.MM.yyyy'))
+        item = QTableWidgetItem(self._mModel.Date[z].toString('dd.MM.yyyy'))
         self.ui.tableWidget.setItem(row_count-1, 0, item)
         self.ui.tableWidget.blockSignals(False)
 
     def dataChanged(self, item_row):
         self.ui.tableWidget.blockSignals(True)
-        row_count = int(self._mModel.rowCount)
+        row_count = int(self._mModel.RowCount)
         for j in range(item_row+1, row_count):
-            item = QTableWidgetItem(self._mModel.date[j].toString('dd.MM.yyyy'))
+            item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
             self.ui.tableWidget.setItem(j, 0, item)
         self.ui.tableWidget.blockSignals(False)

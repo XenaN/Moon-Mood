@@ -29,23 +29,24 @@ class MoonController(QObject):
         new_data = item.data(Qt.DisplayRole)
 
         if item.column() == 0:
-            self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")
-            if self.c_date.isValid() is False:
-                item.setText(None)
+            if new_data == '' and len(self._mModel.Date) == 1:
+                self._mModel.Date[item.row()] = None
             else:
-                if len(self._mModel.date) > item.row():
-                    a = self._mModel.date
-                    a[item.row()] = self.c_date
-                    for j in range(item.row()+1, len(a)):
-                        a[j] = a[j-1].addDays(1)
-                    self._mModel.date = a
-                    print(self._mModel.date, self._mModel.y)
-                    if len(self._mModel.date) > 1:
-                        self._mView.dataChanged(item.row())
+                self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")
+                if self.c_date.isValid() is False:
+                    item.setText(None)
                 else:
-                    a = self._mModel.date
-                    a.append(self.c_date)
-                    self._mModel.date = a
+                    if len(self._mModel.Date) > item.row():
+                        self._mModel.Date[item.row()] = self.c_date
+                        for j in range(item.row() + 1, len(self._mModel.Date)):
+                            self._mModel.Date[j] = self._mModel.Date[j-1].addDays(1)
+                        if len(self._mModel.Date) > 1:
+                            self._mView.dataChanged(item.row())
+                    else:
+                        self._mModel.Date.append(self.c_date)
+                        if self._mModel.Y == []:
+                            self._mModel.Y.append(None)
+
         if item.column() == 1:
             if new_data == '':
                 new_data = None
@@ -53,10 +54,7 @@ class MoonController(QObject):
                 new_data = int(item.data(Qt.DisplayRole))
 
             if self.validate(item) is True or new_data is None:
-                a = self._mModel.y
-                a[item.row()] = new_data # проверить в ручную вызывается ли сеттер при изменение одного значения списка
-                self._mModel.y = a
-                # self._mModel.y[item.row()] = new_data
+                self._mModel.Y[item.row()] = new_data
                 if self.checkNextRow(item) is True:  # метод проверить последняя строка заполнена ли если заполнена
                     self._mModel.addDate()  # вызвать метод добавления строк
             else:
@@ -75,7 +73,7 @@ class MoonController(QObject):
         return result[0] == 2
 
     def checkNextRow(self, item):
-        if (item.row()+1) == self._mModel.rowCount:
+        if (item.row()+1) == self._mModel.RowCount:
             return True
         else:
             return False
