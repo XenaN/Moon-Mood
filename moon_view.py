@@ -1,25 +1,22 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QMutex
+from PyQt5.QtCore import Qt
 
 from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
 
-import numpy as np
-from matplotlib.dates import datestr2num
-
-class MoonObserver(metaclass=ABCMeta):
-    """
-    Абстрактный суперкласс для всех наблюдателей.
-    """
-
-    @abstractmethod
-    def dataChanged(self):
-        """
-        Метод который будет вызван у наблюдателя при изменении модели.
-        """
-        pass
+# class MoonObserver(metaclass=ABCMeta):
+#     """
+#     Абстрактный суперкласс для всех наблюдателей.
+#     """
+#
+#     @abstractmethod
+#     def dataChanged(self):
+#         """
+#         Метод который будет вызван у наблюдателя при изменении модели.
+#         """
+#         pass
 
 
 class MoonMeta(type(QtCore.QObject), ABCMeta):
@@ -33,7 +30,7 @@ class MoonMeta(type(QtCore.QObject), ABCMeta):
     pass
 
 
-class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
+class MoonView(QMainWindow, metaclass=MoonMeta):
     """
     Класс отвечающий за визуальное представление MoonModel.
     """
@@ -58,18 +55,21 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
     def updateGraph(self):
+        """
+        Отрисовка графика
+        """
         # print('graph')
         # print(self._mModel.Date, self._mModel.Y)
         x = []
-        for i in self._mModel.Date:
+        for i in self._mModel.Date:                                 # переводим данные из формата QDate в строку
             if i is not None:
                 x.append(i.toString('dd.MM.yy'))
             else:
-                x.append(None)
-        self.ui.MplWidget.canvas.axes.clear()
+                x.append(None)                                      # значение None пока появляется только в первой ячеке
+        self.ui.MplWidget.canvas.axes.clear()                       # очищаем область для графика, иначе он сохранят старые отредактированные данные
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
 
-        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:
+        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:  #в случае остсутвия первой даты, ось Х оставить пустой
             self.ui.MplWidget.canvas.axes.tick_params(
                                         axis='x',  # changes apply to the x-axis
                                         which='both',  # both major and minor ticks are affected
@@ -77,8 +77,8 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
                                         top=False,  # ticks along the top edge are off
                                         labelbottom=False)
 
-        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)
-        self.ui.MplWidget.canvas.draw()
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)  # создание графика
+        self.ui.MplWidget.canvas.draw()                                                           # его отрисовка
         # print('graph end')
 
 
@@ -89,17 +89,21 @@ class MoonView(QMainWindow, MoonObserver, metaclass=MoonMeta):
         """
 
         row_count = int(self._mModel.RowCount)
-        self.ui.tableWidget.setRowCount(row_count)
-        self.ui.tableWidget.blockSignals(True)
+        self.ui.tableWidget.setRowCount(row_count)      # создаем количество строк
+        self.ui.tableWidget.blockSignals(True)          # блокируем сигнал иначе любое изменение вызывает сигнал для контролера
         z = row_count - 1
-        item = QTableWidgetItem(self._mModel.Date[z].toString('dd.MM.yyyy'))
+        item = QTableWidgetItem(self._mModel.Date[z].toString('dd.MM.yyyy'))  # создаем новую ячейку с датой на день больше предыдущей
         self.ui.tableWidget.setItem(row_count-1, 0, item)
         self.ui.tableWidget.blockSignals(False)
 
     def dataChanged(self, item_row):
-        self.ui.tableWidget.blockSignals(True)
+        """
+        Метод вызывается при изменении модели.
+        Изменяет данные ячеек с датами, в случае изменения даты в середине столбца.
+        """
+        self.ui.tableWidget.blockSignals(True)                                    # блокируется сигнал для свободного изменения ячейки
         row_count = int(self._mModel.RowCount)
-        for j in range(item_row+1, row_count):
+        for j in range(item_row+1, row_count):                                    #для каждой ячейки после измененной записывается новая дата
             item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
             self.ui.tableWidget.setItem(j, 0, item)
         self.ui.tableWidget.blockSignals(False)

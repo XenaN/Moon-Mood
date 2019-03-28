@@ -6,6 +6,9 @@ from mplwidget import MplWidget
 
 
 class Ui_MainWindow(object):
+    """
+     Модуль от QT дизайнера
+    """
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(941, 478)

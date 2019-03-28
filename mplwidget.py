@@ -8,21 +8,24 @@ from matplotlib.widgets import Slider
 
 import numpy as np
 
-class MplWidget(QWidget):
 
+class MplWidget(QWidget):
+    """
+    Модуль создания графика без данных
+    """
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
-        self.canvas = FigureCanvas(Figure())
+        self.canvas = FigureCanvas(Figure())                   # создаем область где будет отрисовываться график
 
-        vertical_layout = QVBoxLayout()
+        vertical_layout = QVBoxLayout()                          # создается лэйаут без отступов
         vertical_layout.addWidget(self.canvas)
         vertical_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.canvas.axes = self.canvas.figure.add_subplot(111)
+        self.canvas.axes = self.canvas.figure.add_subplot(111)   # создаем сам график
 
-        self.initAxes(self.canvas.axes)
-        self.canvas.axes.tick_params(
+        self.initAxes(self.canvas.axes)                          # устанавливаем оси
+        self.canvas.axes.tick_params(                            # изменяем ось X, чтобы была пустой
                                     axis='x',          # changes apply to the x-axis
                                     which='both',      # both major and minor ticks are affected
                                     bottom=False,      # ticks along the bottom edge are off
@@ -44,8 +47,10 @@ class MplWidget(QWidget):
         #self.slider = Slider(self.canvas.axes.xaxis, 'XXX', 0.0, 1.0, val=3)
         #self.slider.on_changed()
 
-
     def initAxes(self, figure):
+        """
+        Метод опускющий вниз ось X и устанавливабщий границы оси Y
+        """
         figure.set_ylim(-10.3, 10.3)
 
         figure.spines['bottom'].set_position('center')
