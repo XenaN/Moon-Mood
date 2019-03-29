@@ -31,13 +31,14 @@ class MoonModel:
         """
         Метод проверяет есть ли пустые строки в в конце
         """
-        # есть баг с удалением строк вначале таблицы
         if self.RowCount > 2:                                    # если строк больше 2х, то удаляем строки и данные из Y и Date
             while self.Y[-2] is None and self.Y[-1] is None:     # пока встречаются два значения None в Y
                 self.RowCount -= 1
                 self.Date.pop()
                 self.Y.pop()
                 # print(self.Date, self.Y, self.RowCount)
+                if len(self.Y) == 1:
+                    break
             self.notifyObservers()
         if self.RowCount == 2:                                   # если две строки, то последняя это добавчная, а первая должна быть None
             if self.Y[0] is None:                                # в таком случае оставляем одну строку со старыми данными
