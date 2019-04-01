@@ -1,5 +1,8 @@
+import os
+
 from PyQt5.QtCore import Qt, QObject, QDate
 from PyQt5.QtGui import QRegExpValidator, QValidator, QIntValidator
+from PyQt5 import QtWidgets
 
 from moon_view import MoonView
 
@@ -90,3 +93,38 @@ class MoonController(QObject):
             return True
         else:
             return False
+
+    def saveData(self):
+        name = QtWidgets.QFileDialog.getSaveFileName(caption='Save File')
+        with open(name[0], 'w') as file:
+            for i in range(0, len(self._mModel.Date)):
+                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + ';' + str(self._mModel.Y[i])
+                    file.write(data)
+                    file.write('\n')
+
+    def openFile(self):
+        name = QtWidgets.QFileDialog.getOpenFileName()
+        if name[0] == '':
+            return
+
+        with open(name[0], 'r') as file:
+            data = []
+            for line in file:
+                data.append(line)
+            for d in range(0, len(data)):
+                data[d] = data[d].strip()
+                data[d] = data[d].split(';')
+
+            for d in data:
+                print(d[0])
+                self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")
+                self._mModel.Date.append(self.c_date)
+                if d[1] != 'None':
+                    d[1] = int(d[1])
+                    self._mModel.Y.append(d[1])
+                else:
+                    self._mModel.Y.append(None)
+
+            self._mModel.RowCount = len(self._mModel.Date)
+            self._mView.dataFilling()
+            # self._mView.updateGraph()

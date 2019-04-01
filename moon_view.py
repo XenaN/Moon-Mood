@@ -54,6 +54,10 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # связываем событие завершения редактирования с методом контроллера
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
+        self.ui.save.clicked.connect(self._mController.saveData)
+
+        self.ui.open.clicked.connect(self._mController.openFile)
+
     def updateGraph(self):
         """
         Отрисовка графика
@@ -91,9 +95,11 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         row_count = int(self._mModel.RowCount)
         self.ui.tableWidget.setRowCount(row_count)      # создаем количество строк
         self.ui.tableWidget.blockSignals(True)          # блокируем сигнал иначе любое изменение вызывает сигнал для контролера
+
         z = row_count - 1
         item = QTableWidgetItem(self._mModel.Date[z].toString('dd.MM.yyyy'))  # создаем новую ячейку с датой на день больше предыдущей
         self.ui.tableWidget.setItem(row_count-1, 0, item)
+
         self.ui.tableWidget.blockSignals(False)
 
     def dataChanged(self, item_row):
@@ -102,8 +108,27 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         Изменяет данные ячеек с датами, в случае изменения даты в середине столбца.
         """
         self.ui.tableWidget.blockSignals(True)                                    # блокируется сигнал для свободного изменения ячейки
+
         row_count = int(self._mModel.RowCount)
         for j in range(item_row+1, row_count):                                    #для каждой ячейки после измененной записывается новая дата
             item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
             self.ui.tableWidget.setItem(j, 0, item)
+
+        self.ui.tableWidget.blockSignals(False)
+
+    def dataFilling(self):
+        self.ui.tableWidget.blockSignals(True)
+
+        row_count = int(self._mModel.RowCount)
+        self.ui.tableWidget.setRowCount(row_count)
+        for j in range(0, row_count):
+            item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
+            self.ui.tableWidget.setItem(j, 0, item)
+        for j in range(0, row_count):
+            if type(self._mModel.Y[j]) is int:
+                item = QTableWidgetItem(str(self._mModel.Y[j]))
+            else:
+                item = QTableWidgetItem('')
+            self.ui.tableWidget.setItem(j, 1, item)
+
         self.ui.tableWidget.blockSignals(False)
