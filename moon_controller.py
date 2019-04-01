@@ -95,7 +95,13 @@ class MoonController(QObject):
             return False
 
     def saveData(self):
+        """
+        Метод вызывыеся при сохранении данных
+        """
         name = QtWidgets.QFileDialog.getSaveFileName(caption='Save File')
+        if name[0] == '':
+            return
+
         with open(name[0], 'w') as file:
             for i in range(0, len(self._mModel.Date)):
                     data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + ';' + str(self._mModel.Y[i])
@@ -103,28 +109,30 @@ class MoonController(QObject):
                     file.write('\n')
 
     def openFile(self):
+        """
+        Метод вызывается при открытии файла с сохраненными данными
+        """
         name = QtWidgets.QFileDialog.getOpenFileName()
         if name[0] == '':
             return
 
         with open(name[0], 'r') as file:
             data = []
-            for line in file:
+            for line in file:                                             # создаем список со строками данных
                 data.append(line)
             for d in range(0, len(data)):
-                data[d] = data[d].strip()
-                data[d] = data[d].split(';')
+                data[d] = data[d].strip()                                 # убираем перенос
+                data[d] = data[d].split(';')                              # разделяем дату и число Mood
 
             for d in data:
-                print(d[0])
-                self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")
-                self._mModel.Date.append(self.c_date)
-                if d[1] != 'None':
+                self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")  # дату перефодим в тип QDate
+                self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
+                if d[1] != 'None':                                        # число сохраняем модель Y
                     d[1] = int(d[1])
                     self._mModel.Y.append(d[1])
                 else:
                     self._mModel.Y.append(None)
 
-            self._mModel.RowCount = len(self._mModel.Date)
-            self._mView.dataFilling()
-            # self._mView.updateGraph()
+            self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
+            self._mView.dataFilling()                                     # запускаем заполнение таблицы
+            self._mView.updateGraph()                                     # запускаем отрисовку графика

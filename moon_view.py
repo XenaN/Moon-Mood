@@ -117,18 +117,22 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.tableWidget.blockSignals(False)
 
     def dataFilling(self):
+        """
+        Метод вызывается при отрытии файла.
+        Заполняет столбцы Date и Mood.
+        """
         self.ui.tableWidget.blockSignals(True)
 
-        row_count = int(self._mModel.RowCount)
+        row_count = int(self._mModel.RowCount)                                    # создаем количество строк
         self.ui.tableWidget.setRowCount(row_count)
-        for j in range(0, row_count):
+        for j in range(0, row_count):                                             # оздаем ячейки и заполняем их датами с файла
             item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
             self.ui.tableWidget.setItem(j, 0, item)
-        for j in range(0, row_count):
+        for j in range(0, row_count):                                             # оздаем ячейки и заполняем их данными Mood с файла
             if type(self._mModel.Y[j]) is int:
                 item = QTableWidgetItem(str(self._mModel.Y[j]))
             else:
-                item = QTableWidgetItem('')
+                item = QTableWidgetItem('')                                       # последняя дата идет со значение None, оставляем пустую ячейку
             self.ui.tableWidget.setItem(j, 1, item)
 
         self.ui.tableWidget.blockSignals(False)
