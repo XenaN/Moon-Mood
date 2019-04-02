@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSlot
 
 from abc import ABCMeta, abstractmethod
 
@@ -40,6 +41,8 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         super(QMainWindow, self).__init__(parent)
         self._mController = in_controller
         self._mModel = in_model
+        self.left = None                                           # переменная для границы графика, пока их не поменяет скролл
+        self.right = None                                          # переменная для границы графика, пока их не поменяет скролл
 
         # подключаем визуальное представление
         self.ui = Ui_MainWindow()
@@ -54,9 +57,20 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # связываем событие завершения редактирования с методом контроллера
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
+        # связываем событие save с методом сохранить данные
         self.ui.save.clicked.connect(self._mController.saveData)
 
+        # связываем событие open с методом открытия файла
         self.ui.open.clicked.connect(self._mController.openFile)
+
+        # связываем событие изменения границ графка с отрисовкой графика
+        self.ui.MplWidget.updateRequest.connect(self.onUpdateRequest)
+
+    @pyqtSlot(float, float)
+    def onUpdateRequest(self, left, right):
+        self.left = left
+        self.right = right
+        self.updateGraph()
 
     def updateGraph(self):
         """
@@ -81,6 +95,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
                                         top=False,  # ticks along the top edge are off
                                         labelbottom=False)
 
+        if self.left is not None:
+            self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
+
         self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)  # создание графика
         self.ui.MplWidget.canvas.draw()                                                           # его отрисовка
         # print('graph end')
@@ -93,6 +110,7 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         """
 
         row_count = int(self._mModel.RowCount)
+        self.ui.MplWidget.setMaxScroll(row_count)
         self.ui.tableWidget.setRowCount(row_count)      # создаем количество строк
         self.ui.tableWidget.blockSignals(True)          # блокируем сигнал иначе любое изменение вызывает сигнал для контролера
 
@@ -124,6 +142,7 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.tableWidget.blockSignals(True)
 
         row_count = int(self._mModel.RowCount)                                    # создаем количество строк
+        self.ui.MplWidget.setMaxScroll(row_count)
         self.ui.tableWidget.setRowCount(row_count)
         for j in range(0, row_count):                                             # оздаем ячейки и заполняем их датами с файла
             item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
@@ -136,3 +155,4 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
             self.ui.tableWidget.setItem(j, 1, item)
 
         self.ui.tableWidget.blockSignals(False)
+
