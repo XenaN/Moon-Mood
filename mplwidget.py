@@ -16,7 +16,7 @@ class MplWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
-        self.canvas = FigureCanvas(Figure())                   # создаем область где будет отрисовываться график
+        self.canvas = FigureCanvas(Figure())                    # создаем область где будет отрисовываться график
 
         vertical_layout = QVBoxLayout()                          # создается лэйаут без отступов
         vertical_layout.addWidget(self.canvas)
@@ -66,7 +66,7 @@ class MplWidget(QWidget):
         self.scroll.setPageStep(10)
         # self.scroll.actionTriggered.connect(self.updateScrollArea)
         self.scroll.valueChanged.connect(self.updateScrollArea)
-        self.updateScrollArea(0)
+        self.updateScrollArea(self.scroll.minimum())
 
     def updateScrollArea(self, value):
         """

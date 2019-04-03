@@ -1,6 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
-
+from PyQt5 import QtCore, QtWidgets
 
 from mplwidget import MplWidget
 
@@ -55,15 +53,26 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
 
-        self.save = QtWidgets.QPushButton(self.centralwidget)
-        self.save.setGeometry(QtCore.QRect(15, 15, 75, 23))
-        self.save.setStyleSheet("background-color: white")
-        self.save.setText('Save')
+        self.fileMenu = self.menubar.addMenu('File')
+        self.openButton = QtWidgets.QAction(MainWindow)
+        self.openButton.setText('Open')
+        self.openButton.setShortcut('Ctrl+Q')
+        self.fileMenu.addAction(self.openButton)
 
-        self.open = QtWidgets.QPushButton(self.centralwidget)
-        self.open.setGeometry(QtCore.QRect(120, 15, 75, 23))
-        self.open.setStyleSheet("background-color: white")
-        self.open.setText('Open')
+        self.saveButton = QtWidgets.QAction(MainWindow)
+        self.saveButton.setText('Save')
+        self.saveButton.setShortcut('Ctrl+S')
+        self.fileMenu.addAction(self.saveButton)
+
+        # self.save = QtWidgets.QPushButton(self.centralwidget)
+        # self.save.setGeometry(QtCore.QRect(15, 15, 75, 23))
+        # self.save.setStyleSheet("background-color: white")
+        # self.save.setText('Save')
+
+        # self.open = QtWidgets.QPushButton(self.centralwidget)
+        # self.open.setGeometry(QtCore.QRect(120, 15, 75, 23))
+        # self.open.setStyleSheet("background-color: white")
+        # self.open.setText('Open')
 
         # self.statusbar = QtWidgets.QStatusBar(MainWindow)
         # self.statusbar.setObjectName("statusbar")

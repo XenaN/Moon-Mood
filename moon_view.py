@@ -58,10 +58,12 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
 
         # связываем событие save с методом сохранить данные
-        self.ui.save.clicked.connect(self._mController.saveData)
+        # self.ui.save.clicked.connect(self._mController.saveData)
+        self.ui.saveButton.triggered.connect(self._mController.saveData)
 
         # связываем событие open с методом открытия файла
-        self.ui.open.clicked.connect(self._mController.openFile)
+        # self.ui.open.clicked.connect(self._mController.openFile)
+        self.ui.openButton.triggered.connect(self._mController.openFile)
 
         # связываем событие изменения границ графка с отрисовкой графика
         self.ui.MplWidget.updateRequest.connect(self.onUpdateRequest)
@@ -94,8 +96,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
                                         bottom=False,
                                         top=False,
                                         labelbottom=False)
-        # else:
-        #     self.ui.MplWidget.canvas.axes.
 
         if self.left is not None:
             self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
@@ -158,3 +158,10 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         self.ui.tableWidget.blockSignals(False)
 
+    # def keyPressEvent(self, event):
+    #     if event.key() == Qt.Key_Delete:
+    #         # Delete selected rows
+    #         rows = self.ui.tableWidget.selectedIndexes()
+    #         for i in rows:
+    #             self.ui.tableWidget.removeRow(i.row())
+    #             print
