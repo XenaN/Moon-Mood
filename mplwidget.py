@@ -36,7 +36,7 @@ class MplWidget(QWidget):
 
         self.scroll = QScrollBar(QtCore.Qt.Horizontal)
         vertical_layout.addWidget(self.scroll)
-        self.step = 6.
+        self.step = 6.5
         self.maxScroll = 6
         self.setupScrollArea()
 
@@ -45,7 +45,7 @@ class MplWidget(QWidget):
         Метод опускющий вниз ось X и устанавливабщий границы оси Y
         """
         figure.set_ylim(-10.3, 10.3)
-        figure.set_xlim(0, 6)
+        figure.set_xlim(-0.5, 6)
 
         figure.spines['bottom'].set_position('center')
         figure.spines['right'].set_color('none')
@@ -61,17 +61,21 @@ class MplWidget(QWidget):
 
     def setupScrollArea(self):
         """
-        Метод орисовывабщий скролл и реагирующий на его движение
+        Метод инициализирует скролл и делает коннект на его движение
         """
-        self.scroll.setPageStep(0.1 * 100)
-        self.scroll.actionTriggered.connect(self.updateScrollArea)
-        self.updateScrollArea()
+        self.scroll.setPageStep(10)
+        # self.scroll.actionTriggered.connect(self.updateScrollArea)
+        self.scroll.valueChanged.connect(self.updateScrollArea)
+        self.updateScrollArea(0)
 
-    def updateScrollArea(self):
+    def updateScrollArea(self, value):
         """
         Метод устанавливает новые границы для графика при движении скролла
         """
-        left = self.scroll.value()*self.maxScroll/self.scroll.maximum()
+        if value == 0:
+            left = -0.5
+        else:
+            left = value*(self.maxScroll-self.step)/self.scroll.maximum()
         right = left + self.step
         self.updateRequest.emit(left, right)
 

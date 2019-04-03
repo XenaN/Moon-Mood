@@ -89,11 +89,13 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:  #в случае остсутвия первой даты, ось Х оставить пустой
             self.ui.MplWidget.canvas.axes.tick_params(
-                                        axis='x',  # changes apply to the x-axis
-                                        which='both',  # both major and minor ticks are affected
-                                        bottom=False,  # ticks along the bottom edge are off
-                                        top=False,  # ticks along the top edge are off
+                                        axis='x',
+                                        which='both',
+                                        bottom=False,
+                                        top=False,
                                         labelbottom=False)
+        # else:
+        #     self.ui.MplWidget.canvas.axes.
 
         if self.left is not None:
             self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
