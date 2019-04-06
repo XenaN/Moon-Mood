@@ -57,12 +57,12 @@ class Ui_MainWindow(object):
 
         self.newFile = QtWidgets.QAction(MainWindow)
         self.newFile.setText('New File')
-        self.newFile.setShortcut('Ctrl+W')
+        self.newFile.setShortcut('Ctrl+N')
         self.fileMenu.addAction(self.newFile)
 
         self.openButton = QtWidgets.QAction(MainWindow)
         self.openButton.setText('Open')
-        self.openButton.setShortcut('Ctrl+Q')
+        self.openButton.setShortcut('Ctrl+O')
         self.fileMenu.addAction(self.openButton)
 
         self.saveButton = QtWidgets.QAction(MainWindow)

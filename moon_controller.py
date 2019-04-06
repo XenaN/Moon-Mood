@@ -104,31 +104,28 @@ class MoonController(QObject):
         """
         Метод вызывается при сохранении данных
         """
-        name = QtWidgets.QFileDialog.getSaveFileName(caption='Save File')
+        name = QtWidgets.QFileDialog.getSaveFileName(None, 'Save File', '', 'Mood Moon Files (*.mmf)')
         if name[0] == '':
             return
 
         with open(name[0], 'w') as file:
             for i in range(0, len(self._mModel.Date)):
-                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + ';' + str(self._mModel.Y[i])
+                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + '\t' + str(self._mModel.Y[i]) + '\n'
                     file.write(data)
-                    file.write('\n')
 
     def openFile(self):
         """
         Метод вызывается при открытии файла с сохраненными данными
         """
-        name = QtWidgets.QFileDialog.getOpenFileName()
+
+        name = QtWidgets.QFileDialog.getOpenFileName(None, "Open Mood and Moon File", "", "Mood Moon Files (*.mmf)")
         if name[0] == '':
             return
 
         with open(name[0], 'r') as file:
-            data = []
-            for line in file:                                             # создаем список со строками данных
-                data.append(line)
-            for d in range(0, len(data)):
-                data[d] = data[d].strip()                                 # убираем перенос
-                data[d] = data[d].split(';')                              # разделяем дату и число Mood
+            data = file.read()
+            data = data.split('\n')
+            data = data[:-1]
 
             self.cleanAll()
             self.writeDataToModel(data)
@@ -157,8 +154,6 @@ class MoonController(QObject):
 
         line = self._mView.clipboard.text()
         data = line.split('\n')                                       # убираем перенос
-        for d in range(0, len(data)):
-            data[d] = data[d].split('\t')                             # разделяем дату и число Mood
 
         if selectedItem[0].data(Qt.DisplayRole) is None:              # проверка пустая ли строка
             self.writeDataToModel(data)
@@ -171,6 +166,8 @@ class MoonController(QObject):
         Метод переводит данные в необходимы тип и записывает в модель
         Запускает заполнение таблицы и отрисовку графика
         """
+        for d in range(0, len(data)):
+            data[d] = data[d].split('\t')                                 # разделяем дату и число Mood
         for d in data:
             self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")      # дату перефодим в тип QDate
             if self.c_date.isValid() is False:
