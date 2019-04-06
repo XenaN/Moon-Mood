@@ -94,6 +94,14 @@ class MoonController(QObject):
         else:
             return False
 
+    def openNewFile(self):
+        self._mModel.Date = []
+        self._mModel.Y = []
+        self._mModel.RowCount = 1
+        self._mView.ui.tableWidget.clearContents()
+        self._mView.ui.tableWidget.setRowCount(1)
+        self._mView.updateGraph()
+
     def saveData(self):
         """
         Метод вызывыеся при сохранении данных
@@ -124,15 +132,72 @@ class MoonController(QObject):
                 data[d] = data[d].strip()                                 # убираем перенос
                 data[d] = data[d].split(';')                              # разделяем дату и число Mood
 
-            for d in data:
-                self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")  # дату перефодим в тип QDate
-                self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
-                if d[1] != 'None':                                        # число сохраняем модель Y
-                    d[1] = int(d[1])
-                    self._mModel.Y.append(d[1])
-                else:
-                    self._mModel.Y.append(None)
+            self.readAndWriteData(data)
 
-            self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
-            self._mView.dataFilling()                                     # запускаем заполнение таблицы
-            self._mView.updateGraph()                                     # запускаем отрисовку графика
+    def copyDataSelectedRows(self):
+        selectedRows = self._mView.ui.tableWidget.selectedIndexes()
+        self.dataForClipboard = ''
+        for i in range(0, len(selectedRows)):
+            self.dataForClipboard += selectedRows[i].data(Qt.DisplayRole)
+            if i%2 == 0:
+                self.dataForClipboard += '\t'
+            else:
+                self.dataForClipboard += '\n'
+        self._mView.clipboard.setText(self.dataForClipboard)
+
+    def pasteDataSelectedRows(self):
+        selectedItem = self._mView.ui.tableWidget.selectedIndexes()
+        # ВНЕСТИ ПРОВЕРКУ БУФФЕРА ОБМЕНА
+
+        line = self._mView.clipboard.text()
+        data = line.split('\n')                                       # убираем перенос
+        for d in range(0, len(data)):
+            data[d] = data[d].split('\t')                             # разделяем дату и число Mood
+
+        if selectedItem[0].data(Qt.DisplayRole) is None:
+            self.readAndWriteData(data)
+
+        else:
+            pass
+            # print(selectedItem[0].row())
+            # row_number, index_row = selectedItem[0].row()
+            # 
+            # for d in data:
+            #     self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")
+            #     if self._mModel.Date[index_row]:
+            #         self._mModel.Date[index_row] = self.c_date
+            #     else:
+            #         self._mModel.Date.append(self.c_date)
+            #
+            #     if d[1] != 'None':                                        # число сохраняем модель Y
+            #         d[1] = int(d[1])
+            #         if self._mModel.Y[index_row]:
+            #             self._mModel.Y[index_row] = d[1]
+            #         else:
+            #             self._mModel.Y.append(d[1])
+            #
+            #     else:
+            #         if self._mModel.Y[index_row]:
+            #             self._mModel.Y[index_row] = None
+            #         else:
+            #             self._mModel.Y.append(None)
+            #
+            #     index_row += 1
+
+            # print(self._mModel.Date, self._mModel.Y, self._mModel.RowCount)
+            # self._mView.dataChanged(row_number)
+            # self._mView.updateGraph()
+
+    def readAndWriteData(self, data):                 #  НАЗВАНИЕ ПОМЕНЯЙ
+        for d in data:
+            self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")  # дату перефодим в тип QDate
+            self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
+            if d[1] != 'None':                                        # число сохраняем модель Y
+                d[1] = int(d[1])
+                self._mModel.Y.append(d[1])
+            else:
+                self._mModel.Y.append(None)
+
+        self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
+        self._mView.dataFilling()                                     # запускаем заполнение таблицы
+        self._mView.updateGraph()                                     # запускаем отрисовку графика

@@ -7,6 +7,8 @@ from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
 
+import signal
+
 # class MoonObserver(metaclass=ABCMeta):
 #     """
 #     Абстрактный суперкласс для всех наблюдателей.
@@ -44,6 +46,11 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.left = None                                           # переменная для границы графика, пока их не поменяет скролл
         self.right = None                                          # переменная для границы графика, пока их не поменяет скролл
 
+        self.app = QApplication.instance()
+        self.clipboard = QApplication.clipboard()
+        # print(self.clipboard.text())
+        # self.clipboard.dataChanged.connect(self.getClipboardData)
+
         # подключаем визуальное представление
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -56,6 +63,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         # связываем событие завершения редактирования с методом контроллера
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
+
+        # связываем событие new file с методом открыть новый файл
+        self.ui.newFile.triggered.connect(self._mController.openNewFile)
 
         # связываем событие save с методом сохранить данные
         # self.ui.save.clicked.connect(self._mController.saveData)
@@ -158,10 +168,13 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         self.ui.tableWidget.blockSignals(False)
 
-    # def keyPressEvent(self, event):
-    #     if event.key() == Qt.Key_Delete:
-    #         # Delete selected rows
-    #         rows = self.ui.tableWidget.selectedIndexes()
-    #         for i in rows:
-    #             self.ui.tableWidget.removeRow(i.row())
-    #             print
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Control:
+            self.keyControlPressed = True
+        if event.key() == Qt.Key_C:
+            if self.keyControlPressed:
+                self._mController.copyDataSelectedRows()              #запускаем функцию для выделения ячеек и вычленения из них текста
+
+        if event.key() == Qt.Key_V:
+            if self.keyControlPressed:
+                self._mController.pasteDataSelectedRows()             #запускаем функцию для вставки текста

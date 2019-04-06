@@ -36,7 +36,6 @@ class MoonModel:
                 self.RowCount -= 1
                 self.Date.pop()
                 self.Y.pop()
-                # print(self.Date, self.Y, self.RowCount)
                 if len(self.Y) == 1:
                     break
             self.notifyObservers()
@@ -54,6 +53,5 @@ class MoonModel:
         self._mObservers.remove(in_observer)
 
     def notifyObservers(self):
-        # print('observers')
         for x in self._mObservers:
             x.rowCountChanged()

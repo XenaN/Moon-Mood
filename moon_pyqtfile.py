@@ -54,6 +54,12 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
 
         self.fileMenu = self.menubar.addMenu('File')
+
+        self.newFile = QtWidgets.QAction(MainWindow)
+        self.newFile.setText('New File')
+        self.newFile.setShortcut('Ctrl+W')
+        self.fileMenu.addAction(self.newFile)
+
         self.openButton = QtWidgets.QAction(MainWindow)
         self.openButton.setText('Open')
         self.openButton.setShortcut('Ctrl+Q')
