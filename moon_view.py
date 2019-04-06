@@ -169,6 +169,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.tableWidget.blockSignals(False)
 
     def keyPressEvent(self, event):
+        """
+        Метод пехеватывает нажатие клавиш Ctrl+C и Ctrl + V
+        """
         if event.key() == Qt.Key_Control:
             self.keyControlPressed = True
         if event.key() == Qt.Key_C:

@@ -58,12 +58,7 @@ class MoonController(QObject):
                             self._mModel.Y.append(None)                         # чтобы график не вылетел
 
         if item.column() == 1:                                    # если столбец для mood
-            # if new_data == '' or self.validate(item) is not True: # в случае пустой записи, в модель Y пишется None
-            #     new_data = None
-            # else:
-            #     new_data = int(item.data(Qt.DisplayRole))         # в другом случае строка переводится в значение
-
-            if self.validate(item) is True:   # если данные проходят валидацию или None
+            if self.validate(item.data(Qt.DisplayRole)) is True:                       # если данные проходят валидацию или None
                 self._mModel.Y[item.row()] = int(new_data)        # то записываем в модель новые значения
                 if self.checkNextRow(item) is True:               # метод проверяет последняя строка заполнена ли, если заполнена
                     self._mModel.addDate()                        # вызваем метод добавления строк с новыми датами
@@ -78,11 +73,8 @@ class MoonController(QObject):
         """
         Метод проверяет корректность написания данных Mood
         """
-        # rx = r"-?[0-9]*[.{0}]?[0-9]*"
-
-        i = item.data(Qt.DisplayRole)
         p = 0
-        result = self.validator.validate(i, p)
+        result = self.validator.validate(item, p)
         return result[0] == 2
 
     def checkNextRow(self, item):
@@ -95,6 +87,9 @@ class MoonController(QObject):
             return False
 
     def openNewFile(self):
+        """
+        Метод вызывается при открытии нового файла
+        """
         self._mModel.Date = []
         self._mModel.Y = []
         self._mModel.RowCount = 1
@@ -104,7 +99,7 @@ class MoonController(QObject):
 
     def saveData(self):
         """
-        Метод вызывыеся при сохранении данных
+        Метод вызывается при сохранении данных
         """
         name = QtWidgets.QFileDialog.getSaveFileName(caption='Save File')
         if name[0] == '':
@@ -132,9 +127,13 @@ class MoonController(QObject):
                 data[d] = data[d].strip()                                 # убираем перенос
                 data[d] = data[d].split(';')                              # разделяем дату и число Mood
 
-            self.readAndWriteData(data)
+            self.writeDataToModel(data)
 
     def copyDataSelectedRows(self):
+        """
+        Метод вызывается при копировании данных
+        Переводит все в строку для буфера обмена
+        """
         selectedRows = self._mView.ui.tableWidget.selectedIndexes()
         self.dataForClipboard = ''
         for i in range(0, len(selectedRows)):
@@ -146,58 +145,49 @@ class MoonController(QObject):
         self._mView.clipboard.setText(self.dataForClipboard)
 
     def pasteDataSelectedRows(self):
+        """
+        Метод вызывается при вставки данных в таблицу
+        Вставляет если таблица пустая, если данные там уже есть ничего не делает
+        """
         selectedItem = self._mView.ui.tableWidget.selectedIndexes()
-        # ВНЕСТИ ПРОВЕРКУ БУФФЕРА ОБМЕНА
 
         line = self._mView.clipboard.text()
         data = line.split('\n')                                       # убираем перенос
         for d in range(0, len(data)):
             data[d] = data[d].split('\t')                             # разделяем дату и число Mood
 
-        if selectedItem[0].data(Qt.DisplayRole) is None:
-            self.readAndWriteData(data)
+        if selectedItem[0].data(Qt.DisplayRole) is None:              # проверка пустая ли строка
+            self.writeDataToModel(data)
 
         else:
             pass
-            # print(selectedItem[0].row())
-            # row_number, index_row = selectedItem[0].row()
-            # 
-            # for d in data:
-            #     self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")
-            #     if self._mModel.Date[index_row]:
-            #         self._mModel.Date[index_row] = self.c_date
-            #     else:
-            #         self._mModel.Date.append(self.c_date)
-            #
-            #     if d[1] != 'None':                                        # число сохраняем модель Y
-            #         d[1] = int(d[1])
-            #         if self._mModel.Y[index_row]:
-            #             self._mModel.Y[index_row] = d[1]
-            #         else:
-            #             self._mModel.Y.append(d[1])
-            #
-            #     else:
-            #         if self._mModel.Y[index_row]:
-            #             self._mModel.Y[index_row] = None
-            #         else:
-            #             self._mModel.Y.append(None)
-            #
-            #     index_row += 1
 
-            # print(self._mModel.Date, self._mModel.Y, self._mModel.RowCount)
-            # self._mView.dataChanged(row_number)
-            # self._mView.updateGraph()
-
-    def readAndWriteData(self, data):                 #  НАЗВАНИЕ ПОМЕНЯЙ
+    def writeDataToModel(self, data):
+        """
+        Метод переводит данные в необходимы тип и записывает в модель
+        Запускает заполнение таблицы и отрисовку графика
+        """
         for d in data:
-            self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")  # дату перефодим в тип QDate
-            self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
-            if d[1] != 'None':                                        # число сохраняем модель Y
-                d[1] = int(d[1])
-                self._mModel.Y.append(d[1])
+            self.c_date = self.c_date.fromString(d[0], "dd.MM.yyyy")      # дату перефодим в тип QDate
+            if self.c_date.isValid() is False:
+                pass
+            else:
+                self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
+
+            if d[1] != 'None':                                            # число сохраняем модель Y
+                if self.validate(d[1]) is True:
+                    d[1] = int(d[1])
+                    self._mModel.Y.append(d[1])
+                else:
+                    pass
             else:
                 self._mModel.Y.append(None)
 
-        self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
-        self._mView.dataFilling()                                     # запускаем заполнение таблицы
-        self._mView.updateGraph()                                     # запускаем отрисовку графика
+        if self._mModel.Date != [] or self._mModel.Y != []:               # провека не полностью ли таблица пустая
+            if self._mModel.Y[-1] is not None:                            # проверка наличия последней пустой строки
+                self._mModel.Date.append(self._mModel.Date[-1].addDays(1))
+                self._mModel.Y.append(None)
+
+            self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
+            self._mView.dataFilling()                                     # запускаем заполнение таблицы
+            self._mView.updateGraph()                                     # запускаем отрисовку графика
