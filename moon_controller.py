@@ -86,15 +86,18 @@ class MoonController(QObject):
         else:
             return False
 
-    def openNewFile(self):
-        """
-        Метод вызывается при открытии нового файла
-        """
+    def cleanAll(self):
         self._mModel.Date = []
         self._mModel.Y = []
         self._mModel.RowCount = 1
         self._mView.ui.tableWidget.clearContents()
         self._mView.ui.tableWidget.setRowCount(1)
+
+    def openNewFile(self):
+        """
+        Метод вызывается при открытии нового файла
+        """
+        self.cleanAll()
         self._mView.updateGraph()
 
     def saveData(self):
@@ -127,6 +130,7 @@ class MoonController(QObject):
                 data[d] = data[d].strip()                                 # убираем перенос
                 data[d] = data[d].split(';')                              # разделяем дату и число Mood
 
+            self.cleanAll()
             self.writeDataToModel(data)
 
     def copyDataSelectedRows(self):
