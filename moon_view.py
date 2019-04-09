@@ -181,3 +181,4 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         if event.key() == Qt.Key_V:
             if self.keyControlPressed:
                 self._mController.pasteDataSelectedRows()             #запускаем функцию для вставки текста
+

@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
+from PyQt5 import QtCore, Qt
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QWheelEvent
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -79,3 +80,27 @@ class MplWidget(QWidget):
         right = left + self.step
         self.updateRequest.emit(left, right)
 
+    def wheelEvent(self, event=QWheelEvent):
+        """
+        Метод реагирует на движение колеса мыши.
+        При движении колеса мыши двигает скролл.
+        При нажатии клавиши Ctrl и движении колеса меняет размер графика.
+        """
+        delta = event.angleDelta().y()
+        modifiers = QApplication.keyboardModifiers()
+        
+        if modifiers == QtCore.Qt.ControlModifier:
+            if delta < 0:
+                if self.step > 0.5:
+                    self.step -= 1
+            else:
+                self.step += 1
+            self.updateScrollArea(self.scroll.value())
+
+        else:
+            if delta > 0:
+                step_scroll = self.scroll.value() - 5
+            else:
+                step_scroll = self.scroll.value() + 5
+
+            self.scroll.setValue(step_scroll)
