@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSlot
+import matplotlib.ticker as ticker
 
 from abc import ABCMeta, abstractmethod
 
@@ -109,11 +110,13 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         if self.left is not None:
             self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
+            delta_lim = self.right-self.left
+            if delta_lim >= 8.5:
+                self.ui.MplWidget.canvas.axes.xaxis.set_major_locator(ticker.MaxNLocator(5))
 
         self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)  # создание графика
         self.ui.MplWidget.canvas.draw()                                                           # его отрисовка
         # print('graph end')
-
 
     def rowCountChanged(self):
         """

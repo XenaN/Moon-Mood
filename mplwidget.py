@@ -65,7 +65,6 @@ class MplWidget(QWidget):
         Метод инициализирует скролл и делает коннект на его движение
         """
         self.scroll.setPageStep(10)
-        # self.scroll.actionTriggered.connect(self.updateScrollArea)
         self.scroll.valueChanged.connect(self.updateScrollArea)
         self.updateScrollArea(self.scroll.minimum())
 
@@ -88,13 +87,14 @@ class MplWidget(QWidget):
         """
         delta = event.angleDelta().y()
         modifiers = QApplication.keyboardModifiers()
-        
+
         if modifiers == QtCore.Qt.ControlModifier:
             if delta < 0:
-                if self.step > 0.5:
+                if self.step > 1.5:
                     self.step -= 1
             else:
-                self.step += 1
+                if self.step <= self.maxScroll + 1:
+                    self.step += 1
             self.updateScrollArea(self.scroll.value())
 
         else:
