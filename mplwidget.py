@@ -37,7 +37,8 @@ class MplWidget(QWidget):
 
         self.scroll = QScrollBar(QtCore.Qt.Horizontal)
         vertical_layout.addWidget(self.scroll)
-        self.step = 6.5
+        self.step = 6.0
+        self.n = 0
         self.maxScroll = 6
         self.setupScrollArea()
 
@@ -53,6 +54,15 @@ class MplWidget(QWidget):
         figure.spines['top'].set_color('none')
 
         figure.xaxis.set_ticks_position('bottom')
+
+    def setStep(self, step):
+        """
+        Метод обновляет self.step
+        """
+        self.step = step
+        self.scroll.setValue(0)
+        self.updateScrollArea(self.scroll.value())
+
 
     def setMaxScroll(self, maximum):
         """
@@ -72,11 +82,17 @@ class MplWidget(QWidget):
         """
         Метод устанавливает новые границы для графика при движении скролла
         """
-        if value == 0:
-            left = -0.5
+        if value == 0:                                      # set_lim утанавливает границы жестко, в том числе убирает смещение по оси x
+            if self.step == 6:                              # в итоге пересечение осей по значением происходит строго в координате 0,0
+                left = -0.5                                 # для того, чтобы даты не наезжали на ось введено искусственно смещение на 0,5
+            else:
+                left = self.step/-15 - 0.25                 # это смещение меняется в зависимости от количества точек на оси
+
+            right = 0 + self.step
         else:
             left = value*(self.maxScroll-self.step)/self.scroll.maximum()
-        right = left + self.step
+            right = left + self.step
+
         self.updateRequest.emit(left, right)
 
     def wheelEvent(self, event=QWheelEvent):
@@ -92,15 +108,18 @@ class MplWidget(QWidget):
             if delta < 0:
                 if self.step > 1.5:
                     self.step -= 1
+                    self.n -= 1
             else:
-                if self.step <= self.maxScroll + 1:
+                if self.step <= self.maxScroll+1:
                     self.step += 1
+                    self.n += 1
             self.updateScrollArea(self.scroll.value())
 
         else:
+            k = 5 + self.n * self.maxScroll/25
             if delta > 0:
-                step_scroll = self.scroll.value() - 5
+                step_scroll = self.scroll.value() - k
             else:
-                step_scroll = self.scroll.value() + 5
+                step_scroll = self.scroll.value() + k
 
             self.scroll.setValue(step_scroll)

@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtCore import Qt, QObject, QDate
-from PyQt5.QtGui import QRegExpValidator, QValidator, QIntValidator
+from PyQt5.QtGui import QIntValidator
 from PyQt5 import QtWidgets
 
 from moon_view import MoonView
@@ -99,6 +99,7 @@ class MoonController(QObject):
         """
         self.cleanAll()
         self._mView.updateGraph()
+        self._mView.ui.MplWidget.setStep(6.0)
 
     def saveData(self):
         """
@@ -129,6 +130,8 @@ class MoonController(QObject):
 
             self.cleanAll()
             self.writeDataToModel(data)
+
+        self._mView.ui.MplWidget.setStep(6.0)
 
     def copyDataSelectedRows(self):
         """

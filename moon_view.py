@@ -47,11 +47,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.left = None                                           # переменная для границы графика, пока их не поменяет скролл
         self.right = None                                          # переменная для границы графика, пока их не поменяет скролл
 
-        self.app = QApplication.instance()
-        self.clipboard = QApplication.clipboard()
-        # print(self.clipboard.text())
-        # self.clipboard.dataChanged.connect(self.getClipboardData)
-
         # подключаем визуальное представление
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -79,6 +74,10 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # связываем событие изменения границ графка с отрисовкой графика
         self.ui.MplWidget.updateRequest.connect(self.onUpdateRequest)
 
+        # запоминаем буфер обмена
+        self.app = QApplication.instance()
+        self.clipboard = QApplication.clipboard()
+
     @pyqtSlot(float, float)
     def onUpdateRequest(self, left, right):
         self.left = left
@@ -89,8 +88,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         """
         Отрисовка графика
         """
-        # print('graph')
-        # print(self._mModel.Date, self._mModel.Y)
         x = []
         for i in self._mModel.Date:                                 # переводим данные из формата QDate в строку
             if i is not None:
@@ -100,7 +97,7 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.MplWidget.canvas.axes.clear()                       # очищаем область для графика, иначе он сохранят старые отредактированные данные
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
 
-        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:  #в случае остсутвия первой даты, ось Х оставить пустой
+        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:  # в случае остсутвия первой даты, ось Х оставить пустой
             self.ui.MplWidget.canvas.axes.tick_params(
                                         axis='x',
                                         which='both',
@@ -108,15 +105,14 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
                                         top=False,
                                         labelbottom=False)
 
-        if self.left is not None:
+        if self.left is not None:                                          # меняем пределы при прокрутке скрола
             self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
             delta_lim = self.right-self.left
-            if delta_lim >= 8.5:
-                self.ui.MplWidget.canvas.axes.xaxis.set_major_locator(ticker.MaxNLocator(5))
+            if delta_lim >= 8.5:                                           # меняем количество тиков, когда график сильно сжимается
+                self.ui.MplWidget.canvas.axes.xaxis.set_major_locator(ticker.MaxNLocator(6))
 
-        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=5)  # создание графика
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=2)  # создание графика
         self.ui.MplWidget.canvas.draw()                                                           # его отрисовка
-        # print('graph end')
 
     def rowCountChanged(self):
         """
