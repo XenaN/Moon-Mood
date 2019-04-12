@@ -37,7 +37,7 @@ class MplWidget(QWidget):
 
         self.scroll = QScrollBar(QtCore.Qt.Horizontal)
         vertical_layout.addWidget(self.scroll)
-        self.step = 6.0
+        self.steps_visible = 6.0
         self.n = 0
         self.maxScroll = 6
         self.setupScrollArea()
@@ -59,7 +59,7 @@ class MplWidget(QWidget):
         """
         Метод обновляет self.step
         """
-        self.step = step
+        self.steps_visible = step
         self.scroll.setValue(0)
         self.updateScrollArea(self.scroll.value())
 
@@ -83,15 +83,15 @@ class MplWidget(QWidget):
         Метод устанавливает новые границы для графика при движении скролла
         """
         if value == 0:                                      # set_lim утанавливает границы жестко, в том числе убирает смещение по оси x
-            if self.step == 6:                              # в итоге пересечение осей по значением происходит строго в координате 0,0
+            if self.steps_visible == 6:                      # в итоге пересечение осей по значением происходит строго в координате 0,0
                 left = -0.5                                 # для того, чтобы даты не наезжали на ось введено искусственно смещение на 0,5
             else:
-                left = self.step/-15 - 0.25                 # это смещение меняется в зависимости от количества точек на оси
+                left = self.steps_visible / -15 - 0.25       # это смещение меняется в зависимости от количества точек на оси
 
-            right = 0 + self.step
+            right = 0 + self.steps_visible
         else:
-            left = value*(self.maxScroll-self.step)/self.scroll.maximum()
-            right = left + self.step
+            left = value * (self.maxScroll - self.steps_visible) / self.scroll.maximum()
+            right = left + self.steps_visible
 
         self.updateRequest.emit(left, right)
 
@@ -101,25 +101,36 @@ class MplWidget(QWidget):
         При движении колеса мыши двигает скролл.
         При нажатии клавиши Ctrl и движении колеса меняет размер графика.
         """
-        delta = event.angleDelta().y()
         modifiers = QApplication.keyboardModifiers()
+        delta = event.angleDelta().y()
 
         if modifiers == QtCore.Qt.ControlModifier:
             if delta < 0:
-                if self.step > 1.5:
-                    self.step -= 1
-                    self.n -= 1
+                if self.steps_visible > 1.5:
+                    self.steps_visible -= 1
             else:
-                if self.step <= self.maxScroll+1:
-                    self.step += 1
-                    self.n += 1
+                if self.steps_visible < self.maxScroll:
+                    self.steps_visible += 1
+
+            self.checkScrollVisibility()
             self.updateScrollArea(self.scroll.value())
 
         else:
-            k = 5 + self.n * self.maxScroll/25
-            if delta > 0:
-                step_scroll = self.scroll.value() - k
-            else:
-                step_scroll = self.scroll.value() + k
+            if self.steps_visible == self.maxScroll:
+                return
+
+            step_coef = (self.steps_visible / self.maxScroll + 0.036) / 0.0312  # высчитаны коэффициенты по формуле линейной зависимости
+            if delta > 0:                                                  # x = step_coef, y = self.step_visible/self.maxScroll
+                step_scroll = self.scroll.value() + step_coef              # y = ax + b
+            else:                                                          # 6/50 = 5*a + b - 5 комфортный шаг при 6 точках на графике из 50
+                step_scroll = self.scroll.value() - step_coef              # 45/50 = 30*a + b
 
             self.scroll.setValue(step_scroll)
+
+    def checkScrollVisibility(self):
+        if self.steps_visible == self.maxScroll:
+            self.scroll.setEnabled(False)
+            self.scroll.setValue(0)
+            self.updateScrollArea(self.scroll.value())
+        else:
+            self.scroll.setEnabled(True)
