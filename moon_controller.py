@@ -54,16 +54,16 @@ class MoonController(QObject):
                             self._mView.dataChanged(item.row())                 # данных в ячеках
                     else:
                         self._mModel.Date.append(self.c_date)                   # если добавляются новые данные
-                        if self._mModel.Y == []:                                # обязательно добавляем значение None в Y
-                            self._mModel.Y.append(None)                         # чтобы график не вылетел
+                        if self._mModel.Mood == []:                             # обязательно добавляем значение None в Y
+                            self._mModel.Mood.append(None)                      # чтобы график не вылетел
 
         if item.column() == 1:                                    # если столбец для mood
-            if self.validate(item.data(Qt.DisplayRole)) is True:                       # если данные проходят валидацию или None
-                self._mModel.Y[item.row()] = int(new_data)        # то записываем в модель новые значения
+            if self.validate(item.data(Qt.DisplayRole)) is True:  # если данные проходят валидацию или None
+                self._mModel.Mood[item.row()] = int(new_data)     # то записываем в модель новые значения
                 if self.checkNextRow(item) is True:               # метод проверяет последняя строка заполнена ли, если заполнена
                     self._mModel.addDate()                        # вызваем метод добавления строк с новыми датами
             else:
-                self._mModel.Y[item.row()] = None                 # если данные не проходят валидацию, ячейку оставляем пустой
+                self._mModel.Mood[item.row()] = None              # если данные не проходят валидацию, ячейку оставляем пустой
                 item.setText(None)
 
         self._mModel.cleanerRow()                                 # подчищаем лишние ячейки пустые
@@ -88,7 +88,7 @@ class MoonController(QObject):
 
     def cleanAll(self):
         self._mModel.Date = []
-        self._mModel.Y = []
+        self._mModel.Mood = []
         self._mModel.RowCount = 1
         self._mView.ui.tableWidget.clearContents()
         self._mView.ui.tableWidget.setRowCount(1)
@@ -111,7 +111,7 @@ class MoonController(QObject):
 
         with open(name[0], 'w') as file:
             for i in range(0, len(self._mModel.Date)):
-                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + '\t' + str(self._mModel.Y[i]) + '\n'
+                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + '\t' + str(self._mModel.Mood[i]) + '\n'
                     file.write(data)
 
     def openFile(self):
@@ -181,16 +181,16 @@ class MoonController(QObject):
             if d[1] != 'None':                                            # число сохраняем модель Y
                 if self.validate(d[1]) is True:
                     d[1] = int(d[1])
-                    self._mModel.Y.append(d[1])
+                    self._mModel.Mood.append(d[1])
                 else:
                     pass
             else:
-                self._mModel.Y.append(None)
+                self._mModel.Mood.append(None)
 
-        if self._mModel.Date != [] or self._mModel.Y != []:               # провека не полностью ли таблица пустая
-            if self._mModel.Y[-1] is not None:                            # проверка наличия последней пустой строки
+        if self._mModel.Date != [] or self._mModel.Mood != []:               # провека не полностью ли таблица пустая
+            if self._mModel.Mood[-1] is not None:                            # проверка наличия последней пустой строки
                 self._mModel.Date.append(self._mModel.Date[-1].addDays(1))
-                self._mModel.Y.append(None)
+                self._mModel.Mood.append(None)
 
             self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
             self._mView.dataFilling()                                     # запускаем заполнение таблицы

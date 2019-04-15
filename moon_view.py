@@ -94,10 +94,14 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
                 x.append(i.toString('dd.MM.yy'))
             else:
                 x.append(None)                                      # значение None пока появляется только в первой ячеке
+
+        self._mModel.Moon = [9, 8, 6, 4, 2, 0, -2, -4.5, -6.5, -8.5, -9.5, -9.8, -10, -9.8, -9.5, -8.5, -6.5, -4.5, -2,
+                             0, 2, 4, 6, 8, 9, 9.5, 9.8, 10]
+
         self.ui.MplWidget.canvas.axes.clear()                       # очищаем область для графика, иначе он сохранят старые отредактированные данные
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
 
-        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:  # в случае остсутвия первой даты, ось Х оставить пустой
+        if len(self._mModel.Date) == 0 or self._mModel.Date == [None]:     # в случае остсутвия первой даты, ось Х оставить пустой
             self.ui.MplWidget.canvas.axes.tick_params(
                                         axis='x',
                                         which='both',
@@ -111,8 +115,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
             if delta_lim >= 8.5:                                           # меняем количество тиков, когда график сильно сжимается
                 self.ui.MplWidget.canvas.axes.xaxis.set_major_locator(ticker.MaxNLocator(6))
 
-        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Y, 'go--', linewidth=2, markersize=2)  # создание графика
-        self.ui.MplWidget.canvas.draw()                                                           # его отрисовка
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Mood, 'go--', linewidth=2, markersize=2)  # создание графика
+        self.ui.MplWidget.canvas.axes.plot(x, self._mModel.Moon, color=[0, 0, 1], linewidth=2)
+        self.ui.MplWidget.canvas.draw()                                                              # его отрисовка
 
     def rowCountChanged(self):
         """
@@ -159,8 +164,8 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
             item = QTableWidgetItem(self._mModel.Date[j].toString('dd.MM.yyyy'))
             self.ui.tableWidget.setItem(j, 0, item)
         for j in range(0, row_count):                                             # оздаем ячейки и заполняем их данными Mood с файла
-            if type(self._mModel.Y[j]) is int:
-                item = QTableWidgetItem(str(self._mModel.Y[j]))
+            if type(self._mModel.Mood[j]) is int:
+                item = QTableWidgetItem(str(self._mModel.Mood[j]))
             else:
                 item = QTableWidgetItem('')                                       # последняя дата идет со значение None, оставляем пустую ячейку
             self.ui.tableWidget.setItem(j, 1, item)
