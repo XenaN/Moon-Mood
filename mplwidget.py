@@ -128,6 +128,9 @@ class MplWidget(QWidget):
             self.scroll.setValue(step_scroll)
 
     def checkScrollVisibility(self):
+        """
+        Метод прячет скролл, когда это необходимо
+        """
         if self.steps_visible == self.maxScroll:
             self.scroll.setEnabled(False)
             self.scroll.setValue(0)

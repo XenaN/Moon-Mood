@@ -13,7 +13,7 @@ class MoonModel:
         self.Date = []              # значения столбца даты
         self.Mood = []              # значения столбца Mood
         self.RowCount = 1           # список строк в таблице
-        self.Moon = []
+        self.Moon = []              # список фаз луны по оси Y
         self._mObservers = []       # список наблюдателей
 
     def addDate(self):

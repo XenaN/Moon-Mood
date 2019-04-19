@@ -40,7 +40,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
     """
 
     def __init__(self, in_controller, in_model, parent=None):
-        # super().__init__()
         super(QMainWindow, self).__init__(parent)
         self._mController = in_controller
         self._mModel = in_model
@@ -64,11 +63,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.newFile.triggered.connect(self._mController.openNewFile)
 
         # связываем событие save с методом сохранить данные
-        # self.ui.save.clicked.connect(self._mController.saveData)
         self.ui.saveButton.triggered.connect(self._mController.saveData)
 
         # связываем событие open с методом открытия файла
-        # self.ui.open.clicked.connect(self._mController.openFile)
         self.ui.openButton.triggered.connect(self._mController.openFile)
 
         # связываем событие изменения границ графка с отрисовкой графика
@@ -80,6 +77,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
     @pyqtSlot(float, float)
     def onUpdateRequest(self, left, right):
+        """
+        Метод реагирует на сигнал и устанавливает новые границы график
+        """
         self.left = left
         self.right = right
         self.updateGraph()
@@ -94,9 +94,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
                 x.append(i.toString('dd.MM.yy'))
             else:
                 x.append(None)                                      # значение None пока появляется только в первой ячеке
-
-        self._mModel.Moon = [9, 8, 6, 4, 2, 0, -2, -4.5, -6.5, -8.5, -9.5, -9.8, -10, -9.8, -9.5, -8.5, -6.5, -4.5, -2,
-                             0, 2, 4, 6, 8, 9, 9.5, 9.8, 10]
 
         self.ui.MplWidget.canvas.axes.clear()                       # очищаем область для графика, иначе он сохранят старые отредактированные данные
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
@@ -129,6 +126,8 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.MplWidget.setMaxScroll(row_count)
         self.ui.tableWidget.setRowCount(row_count)      # создаем количество строк
         self.ui.tableWidget.blockSignals(True)          # блокируем сигнал иначе любое изменение вызывает сигнал для контролера
+
+        print(self._mModel.Moon)
 
         z = row_count - 1
         item = QTableWidgetItem(self._mModel.Date[z].toString('dd.MM.yyyy'))  # создаем новую ячейку с датой на день больше предыдущей

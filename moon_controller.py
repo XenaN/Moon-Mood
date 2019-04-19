@@ -1,10 +1,9 @@
-import os
-
 from PyQt5.QtCore import Qt, QObject, QDate
 from PyQt5.QtGui import QIntValidator
 from PyQt5 import QtWidgets
 
 from moon_view import MoonView
+from moon_phase import MoonPhase
 
 
 class MoonController(QObject):
@@ -20,6 +19,7 @@ class MoonController(QObject):
         super().__init__()
         self._mModel = in_model
         self._mView = MoonView(self, self._mModel)
+        self._mMoonPhase = MoonPhase(self._mModel)
 
         # устанавливаем валидатор для значения Y
         self.validator = QIntValidator(-10, 10, self)
@@ -87,9 +87,14 @@ class MoonController(QObject):
             return False
 
     def cleanAll(self):
+        """
+        Метод очищает все данные
+        """
         self._mModel.Date = []
         self._mModel.Mood = []
+        self._mModel.Moon = []
         self._mModel.RowCount = 1
+        self._mMoonPhase.setNullQuarterPhase()
         self._mView.ui.tableWidget.clearContents()
         self._mView.ui.tableWidget.setRowCount(1)
 
@@ -118,7 +123,6 @@ class MoonController(QObject):
         """
         Метод вызывается при открытии файла с сохраненными данными
         """
-
         name = QtWidgets.QFileDialog.getOpenFileName(None, "Open Mood and Moon File", "", "Mood Moon Files (*.mmf)")
         if name[0] == '':
             return
@@ -193,5 +197,8 @@ class MoonController(QObject):
                 self._mModel.Mood.append(None)
 
             self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
+
+            self._mMoonPhase.calculatePhase()
+
             self._mView.dataFilling()                                     # запускаем заполнение таблицы
             self._mView.updateGraph()                                     # запускаем отрисовку графика
