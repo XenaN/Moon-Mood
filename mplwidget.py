@@ -69,6 +69,7 @@ class MplWidget(QWidget):
         Метод устанавливабщий макисмальное значение для скролла
         """
         self.maxScroll = maximum
+        self.checkScrollVisibility()
 
     def setupScrollArea(self):
         """

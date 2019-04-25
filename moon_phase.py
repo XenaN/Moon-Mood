@@ -1,5 +1,6 @@
 import datetime
 
+from PyQt5.QtCore import pyqtSlot, QDate, QObject
 from astral import Astral
 
 '''0 = New Moon
@@ -8,11 +9,12 @@ from astral import Astral
 21 = Last Quarter'''
 
 
-class MoonPhase:
+class MoonPhase(QObject):
     """
     Класс отвечающий за соответствие даты и фазы луны
     """
-    def __init__(self, in_model):
+    def __init__(self, in_model, parent=None):
+        QObject.__init__(self, parent)
         self._mModel = in_model
         self.astral = Astral()
         self.quarter_phase = []
@@ -20,23 +22,53 @@ class MoonPhase:
                             [2.2, 4.3, 6.2, 7.8, 9.0, 9.7],
                             [2.6, 5.0, 7.1, 8.7, 9.7]]
 
-    def calculatePhase(self):
+        # связываем событие очищения модели луны и очищение фаз луны
+        self._mModel.cleanPhaseRequest.connect(self.cleanPhase)
+
+        # связываем событие пустой первой строки и очищение фаз луны
+        self._mModel.setNullPhaseRequest.connect(self.setNullQuarterPhase)
+
+        # связываем событие пустой первой строки и очищение фаз луны
+        self._mModel.calculatePhaseRequest.connect(self.calculatePhase)
+
+    @pyqtSlot(QDate)
+    def calculatePhase(self, date):
         """
         Метод считает фазы луны по датам
         """
-        for date in self._mModel.Date:
-            date = date.toPyDate()
+        # for date in self._mModel.Date:
+        #     date = date.toPyDate()
+        #     self.checkMoonPhase(date)
+        date = date.toPyDate()
+        if self.checkDateinQuarterPhase(date) is False:
             self.checkMoonPhase(date)
+        self.checkFirstDay(date)
+        self.checkLastDay(date)
+        self.fillModelMoon(date)
 
-        self.checkFirstDay(self._mModel.Date[0].toPyDate())
-        self.checkLastDay(self._mModel.Date[-1].toPyDate())
-        self.fillModelMoon()
-
+    @pyqtSlot()
     def setNullQuarterPhase(self):
         """
         Метод вызывается при сбросе данных
         """
         self.quarter_phase = []
+
+    @pyqtSlot(QDate)
+    def cleanPhase(self, date):
+        """
+        Метод удаляет фазы лун
+        """
+        if date < self.quarter_phase[-2][0]:
+            self.quarter_phase.pop()
+
+    def checkDateinQuarterPhase(self, date):
+        finded = False
+        if self.quarter_phase != []:
+            for i in range(0, len(self.quarter_phase)):
+                if self.quarter_phase[i][0] == date:
+                    finded = True
+        return finded
+
 
     def checkMoonPhase(self, date):
         """
@@ -57,7 +89,7 @@ class MoonPhase:
         Метод проверяет, является ли переданная дата четвертью, если нет, то проверяет ПРЕДЫДУЩУЮ дату,
         пока не найдет четверть. И запишет ее в quarter_phase
         """
-        if self.quarter_phase[0][0] != first_day:
+        if self.quarter_phase == []:   #  or self.quarter_phase[0][0] != first_day  or self.quarter_phase[-2][0] > first_day
             date = first_day - datetime.timedelta(1)
 
             moon_phase = self.astral.moon_phase(date=date)
@@ -75,29 +107,28 @@ class MoonPhase:
         Метод проверяет, является ли переданная дата четвертью, если нет, то проверяет СЛЕДУЮЩУЮ дату,
         пока не найдет четверть. И запишет ее в quarter_phase
         """
-        if self.quarter_phase[-1][0] != last_day:
+        if self.quarter_phase[-1][0] < last_day:
             date = last_day + datetime.timedelta(1)
             self.checkMoonPhase(date)
             self.checkLastDay(date)
 
-    def fillModelMoon(self):
+    def fillModelMoon(self, date):
         """
         Метод заполняет модель Moon
         """
-        for i in self._mModel.Date:
-            i = i.toPyDate()
-            for j in range(0, len(self.quarter_phase)-1):
-                if self.quarter_phase[j][0] < i < self.quarter_phase[j+1][0]:
-                    length = self.checkLengthQuater(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
-                    y = i - self.quarter_phase[j][0]
-                    y = y.days - 1
-                    side = self.checkSideQuarter(j, length)
-                    self._mModel.Moon.append(side[y])
-
-                elif i == self.quarter_phase[j][0]:
-                    self._mModel.Moon.append(self.quarter_phase[j][1])
-                else:
-                    continue
+        for j in range(0, len(self.quarter_phase)-1):
+            if self.quarter_phase[j][0] < date < self.quarter_phase[j+1][0]:
+                length = self.checkLengthQuater(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
+                y = date - self.quarter_phase[j][0]
+                y = y.days - 1
+                side = self.checkSideQuarter(j, length)
+                self._mModel.addMoon(side[y])
+            elif date == self.quarter_phase[j][0]:
+                self._mModel.addMoon(self.quarter_phase[j][1])
+            elif date == self.quarter_phase[j+1][0]:
+                self._mModel.addMoon(self.quarter_phase[j+1][1])
+            else:
+                continue
 
     def checkLengthQuater(self, date_phase1, date_phase2):
         """

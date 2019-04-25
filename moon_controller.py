@@ -36,38 +36,52 @@ class MoonController(QObject):
         Изменяет данные модели
         """
         # print(item)
-        new_data = item.data(Qt.DisplayRole)                                   # вытаскиваем из item данные
+        if item.column() == 0:                                    # если данные забиты в столбце с датой
+            self.changeModelDate(item)
 
-        if item.column() == 0:                                                 # если данные забиты в столбце с датой
-            if new_data == '' and len(self._mModel.Date) == 1:                 # в случае пустой первой ячейки записываем значение None
-                self._mModel.Date[item.row()] = None
-            else:
-                self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")   # данные из формата дата переводим в строку
-                if self.c_date.isValid() is False:                             # если дата не подходящего вида оставляем ячейку пустой
-                    item.setText(None)
-                else:
-                    if len(self._mModel.Date) > item.row():                     # если данные поменялись в середине стобца, а не в конце
-                        self._mModel.Date[item.row()] = self.c_date             # то заменяем старые на новые
-                        for j in range(item.row() + 1, len(self._mModel.Date)): # и последующие увеличиваем на день после новой даты
-                            self._mModel.Date[j] = self._mModel.Date[j-1].addDays(1)
-                        if len(self._mModel.Date) > 1:                          # в таком случае запускаем замену всех последующих
-                            self._mView.dataChanged(item.row())                 # данных в ячеках
-                    else:
-                        self._mModel.Date.append(self.c_date)                   # если добавляются новые данные
-                        if self._mModel.Mood == []:                             # обязательно добавляем значение None в Y
-                            self._mModel.Mood.append(None)                      # чтобы график не вылетел
-
-        if item.column() == 1:                                    # если столбец для mood
-            if self.validate(item.data(Qt.DisplayRole)) is True:  # если данные проходят валидацию или None
-                self._mModel.Mood[item.row()] = int(new_data)     # то записываем в модель новые значения
-                if self.checkNextRow(item) is True:               # метод проверяет последняя строка заполнена ли, если заполнена
-                    self._mModel.addDate()                        # вызваем метод добавления строк с новыми датами
-            else:
-                self._mModel.Mood[item.row()] = None              # если данные не проходят валидацию, ячейку оставляем пустой
-                item.setText(None)
+        elif item.column() == 1:                                    # если столбец для mood
+            self.changeModelMood(item)
 
         self._mModel.cleanerRow()                                 # подчищаем лишние ячейки пустые
         self._mView.updateGraph()                                 # запускаем отрисовку графика
+
+    def changeModelDate(self, item):
+        """
+        Меняет модель Date определенным образом
+        """
+        new_data = item.data(Qt.DisplayRole)                          # вытаскиваем из item данные
+        if new_data == '' and (self._mModel.getLengthDate() == 1 or self._mModel.getLengthDate() == 0):
+            self._mModel.addEmptyDate()                               # в случае пустой первой ячейки записываем значение None
+            return
+
+        self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")  # данные из формата дата переводим в QDate
+        if self.c_date.isValid() is False:                            # если дата не подходящего вида оставляем ячейку пустой
+            item.setText(None)
+            return
+
+        if self._mModel.getLengthDate() > item.row():                 # если данные поменялись в середине стобца, а не в конце
+            if item.row() == 0:                                       # если ошибка в первой строке, то ее можно исправить
+                self._mModel.changedDates(self.c_date)
+            else:
+                item.setText(self._mModel.getDateString(item.row()))
+        else:
+            self._mModel.addDate(self.c_date)                        # если добавляются новые данные
+            self._mModel.addMood(None)
+            # if self._mModel.Mood == []:                            # обязательно добавляем значение None в Y
+            #     self._mModel.addMood(None)                         # чтобы график не вылетел
+
+    def changeModelMood(self, item):
+        """
+        Меняет модель Mood определенным образом
+        """
+        new_data = item.data(Qt.DisplayRole)                     # вытаскиваем из item данные
+        if self.validate(item.data(Qt.DisplayRole)) is True:     # если данные проходят валидацию или None
+            self._mModel.addMood(int(new_data), item.row())      # то записываем в модель новые значения
+            if self.checkNextRow(item) is True:                  # метод проверяет последняя строка заполнена ли, если заполнена
+                self._mModel.addNextDate()                       # вызваем метод добавления строк с новыми датами
+        else:
+            self._mModel.addMood(None, item.row())               # если данные не проходят валидацию, ячейку оставляем пустой
+            item.setText(None)
 
     def validate(self, item):
         """
@@ -81,7 +95,7 @@ class MoonController(QObject):
         """
         Метод проверяет есть строки после измененной ячейки
         """
-        if (item.row()+1) == self._mModel.RowCount:
+        if (item.row()+1) == self._mModel.getRowCount():
             return True
         else:
             return False
@@ -90,10 +104,7 @@ class MoonController(QObject):
         """
         Метод очищает все данные
         """
-        self._mModel.Date = []
-        self._mModel.Mood = []
-        self._mModel.Moon = []
-        self._mModel.RowCount = 1
+        self._mModel.setNullModel()
         self._mMoonPhase.setNullQuarterPhase()
         self._mView.ui.tableWidget.clearContents()
         self._mView.ui.tableWidget.setRowCount(1)
@@ -115,8 +126,8 @@ class MoonController(QObject):
             return
 
         with open(name[0], 'w') as file:
-            for i in range(0, len(self._mModel.Date)):
-                    data = str(self._mModel.Date[i].toString('dd.MM.yyyy')) + '\t' + str(self._mModel.Mood[i]) + '\n'
+            for i in range(0, self._mModel.getLengthDate()):
+                    data = self._mModel.getDateString(i) + '\t' + str(self._mModel.getMood(i)) + '\n'
                     file.write(data)
 
     def openFile(self):
@@ -180,25 +191,22 @@ class MoonController(QObject):
             if self.c_date.isValid() is False:
                 pass
             else:
-                self._mModel.Date.append(self.c_date)                     # сохраняем в модель даты
+                self._mModel.addDate(self.c_date)                         # сохраняем в модель даты
 
             if d[1] != 'None':                                            # число сохраняем модель Y
                 if self.validate(d[1]) is True:
                     d[1] = int(d[1])
-                    self._mModel.Mood.append(d[1])
+                    self._mModel.addMood(d[1])
                 else:
                     pass
             else:
-                self._mModel.Mood.append(None)
+                self._mModel.addMood(None)
 
-        if self._mModel.Date != [] or self._mModel.Mood != []:               # провека не полностью ли таблица пустая
-            if self._mModel.Mood[-1] is not None:                            # проверка наличия последней пустой строки
-                self._mModel.Date.append(self._mModel.Date[-1].addDays(1))
-                self._mModel.Mood.append(None)
+        self._mModel.setRowCount(self._mModel.getLengthDate())                 # сохраянем в модель число строк
 
-            self._mModel.RowCount = len(self._mModel.Date)                # сохраянем в модель число строк
-
-            self._mMoonPhase.calculatePhase()
+        if self._mModel.getDate() != [] or self._mModel.getMood() != []:     # провека не полностью ли таблица пустая
+            if self._mModel.getMood(-1) is not None:                         # проверка наличия последней пустой строки
+                self._mModel.addNextDate()
 
             self._mView.dataFilling()                                     # запускаем заполнение таблицы
             self._mView.updateGraph()                                     # запускаем отрисовку графика
