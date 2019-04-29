@@ -28,7 +28,7 @@ class MoonController(QObject):
         self.c_date = QDate()
 
         # имя файла
-        self.file_name = ''
+        self.file_name = ('',)
 
         # запускаем визуальное представление??
         self._mView.show()
@@ -115,7 +115,7 @@ class MoonController(QObject):
         """
         Метод вызывается при открытии нового файла
         """
-        self.file_name = ''
+        self.file_name = ('',)
         self.cleanAll()
         self._mView.ui.MplWidget.setStep(6.0)
 
@@ -140,7 +140,7 @@ class MoonController(QObject):
         """
         Метод вызывается при сохранении данных
         """
-        if self.file_name == '':
+        if self.file_name[0] == '':
             return
 
         name = self.file_name

@@ -20,7 +20,8 @@ class MoonPhase(QObject):
         self.quarter_phase = []
         self.variantY = [[1.9, 3.8, 5.6, 7.1, 8.3, 9.2, 9.8],
                             [2.2, 4.3, 6.2, 7.8, 9.0, 9.7],
-                            [2.6, 5.0, 7.1, 8.7, 9.7]]
+                            [2.6, 5.0, 7.1, 8.7, 9.7],
+                            [1.7, 3.4, 5.0, 6.4, 7.7, 8.7, 9.4, 9.8]]
 
         # связываем событие очищения модели луны и очищение фаз луны
         self._mModel.cleanPhaseRequest.connect(self.cleanPhase)
@@ -116,6 +117,7 @@ class MoonPhase(QObject):
         for j in range(0, len(self.quarter_phase)-1):
             if self.quarter_phase[j][0] < date < self.quarter_phase[j+1][0]:
                 length = self.checkLengthQuater(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
+                print(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
                 y = date - self.quarter_phase[j][0]
                 y = y.days - 1
                 side = self.checkSideQuarter(j, length)
@@ -139,6 +141,8 @@ class MoonPhase(QObject):
             return 1
         elif delta == 6:
             return 2
+        elif delta == 9:
+            return 3
 
     def checkSideQuarter(self, index_quarter, index_lenght):
         """
