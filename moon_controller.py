@@ -115,7 +115,7 @@ class MoonController(QObject):
         """
         Метод вызывается при открытии нового файла
         """
-        self.file_name = []
+        self.file_name = ''
         self.cleanAll()
         self._mView.ui.MplWidget.setStep(6.0)
 
@@ -140,9 +140,10 @@ class MoonController(QObject):
         """
         Метод вызывается при сохранении данных
         """
-        name = self.file_name
-        if name[0] == '':
+        if self.file_name == '':
             return
+
+        name = self.file_name
 
         with open(name[0], 'w') as file:
             for i in range(0, self._mModel.getLengthDate()):
@@ -168,6 +169,7 @@ class MoonController(QObject):
 
         self._mView.ui.MplWidget.setStep(6.0)
 
+
     def copyDataSelectedRows(self):
         """
         Метод вызывается при копировании данных
@@ -192,6 +194,8 @@ class MoonController(QObject):
 
         line = self._mView.clipboard.text()
         data = line.split('\n')                                       # убираем перенос
+        if data[-1] == '':
+            data = data[:-1]
 
         if selectedItem[0].data(Qt.DisplayRole) is None:              # проверка пустая ли строка
             self.writeDataToModel(data)
@@ -222,12 +226,18 @@ class MoonController(QObject):
             else:
                 self._mModel.addMood(None)
 
-        self._mModel.setRowCount(self._mModel.getLengthDate())                 # сохраянем в модель число строк
 
-        if self._mModel.getDate() != [] or self._mModel.getMood() != []:     # провека не полностью ли таблица пустая
-            if self._mModel.getMood(-1) is not None:                         # проверка наличия последней пустой строки
+
+        if self._mModel.getDate() != [] or self._mModel.getMood() != []:    # провека не полностью ли таблица пустая
+            self._mModel.setRowCount(self._mModel.getLengthDate())  # сохраянем в модель число строк
+            if self._mModel.getMood(-1) is not None:                        # проверка наличия последней пустой строки
                 self._mModel.addNextDate()
 
             self._mView.ui.MplWidget.setMaxScroll(self._mModel.getRowCount())
-            self._mView.dataFilling()                                     # запускаем заполнение таблицы
-            self._mView.updateGraph()                                     # запускаем отрисовку графика
+            self._mView.dataFilling()                                       # запускаем заполнение таблицы
+            self._mView.updateGraph()                                       # запускаем отрисовку графика
+
+        else:
+            self._mModel.setRowCount(1)
+            self._mView.resetFigure()
+            self._mView.ui.MplWidget.canvas.draw()

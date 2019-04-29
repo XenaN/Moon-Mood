@@ -22,7 +22,6 @@ class MoonModel(QObject):
         self.__Mood = []              # значения столбца Mood
         self.__RowCount = 1           # список строк в таблице
         self.__Moon = []              # список фаз луны по оси Y
-        # self._mObservers = []       # список наблюдателей
 
     def getDate(self):
         """
@@ -56,7 +55,6 @@ class MoonModel(QObject):
         Меняет количество строк
         """
         self.__RowCount = row_count
-        # self.notifyObservers()
 
     def addEmptyDate(self):
         """
@@ -75,8 +73,6 @@ class MoonModel(QObject):
         self.calculatePhaseRequest.emit(date)
         self.rowCountChangedRequest.emit()
 
-        # self.notifyObservers()
-
     def addNextDate(self):
         """
         Метод добавляет еще одну дату, чтобы появилась новая строка с ней
@@ -89,7 +85,6 @@ class MoonModel(QObject):
 
         self.calculatePhaseRequest.emit(b)
         self.rowCountChangedRequest.emit()
-        # self.notifyObservers()               # оповещаем наблюдателей
 
     def getDateString(self, index):
         """
@@ -125,14 +120,12 @@ class MoonModel(QObject):
             self.__Mood.append(mood)
         else:
             self.__Mood[index] = mood
-        # self.notifyObservers()
 
     def addMoon(self, moon):
         """
         Добавляет в модель луны новые значения
         """
         self.__Moon.append(moon)
-        # self.notifyObservers()
 
     def setNullModel(self):
         """
@@ -143,7 +136,6 @@ class MoonModel(QObject):
         self.__Moon = []
         self.__RowCount = 1
         self.setNullPhaseRequest.emit()
-        # self.notifyObservers()
 
     def cleanerRow(self):
         """
@@ -166,15 +158,4 @@ class MoonModel(QObject):
                 self.__Mood = [self.__Mood[0]]
                 self.__Moon = [self.__Moon[0]]
                 self.rowCountChangedRequest.emit()
-        # self.notifyObservers()
 
-
-    # def addObserver(self, in_observer):
-    #     self._mObservers.append(in_observer)
-    #
-    # def removeObserver(self, in_observer):
-    #     self._mObservers.remove(in_observer)
-    #
-    # def notifyObservers(self):
-    #     for x in self._mObservers:
-    #         x.modelIsChanged()

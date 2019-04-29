@@ -3,25 +3,12 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSlot
 import matplotlib.ticker as ticker
-from scipy.interpolate import BSpline, UnivariateSpline
+from scipy.interpolate import BSpline
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
-from moon_settings_widget import MoonSettingWidget
-
-# class MoonObserver(metaclass=ABCMeta):
-#     """
-#     Абстрактный суперкласс для всех наблюдателей.
-#     """
-#
-#     @abstractmethod
-#     def dataChanged(self):
-#         """
-#         Метод который будет вызван у наблюдателя при изменении модели.
-#         """
-#         pass
 
 
 class MoonMeta(type(QtCore.QObject), ABCMeta):
@@ -69,9 +56,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # связываем событие open с методом открытия файла
         self.ui.openButton.triggered.connect(self._mController.openFile)
 
-        # связываем событие settings с окном настроек
-        # self.ui.settingsButton.triggered.connect(self.openSettings)
-
         # связываем событие изменения границ графка с отрисовкой графика
         self.ui.MplWidget.updateRequest.connect(self.onUpdateRequest)
 
@@ -85,7 +69,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.ui.MplWidget.checkBoxMoon.toggled.connect(self.updateGraph)
         self.ui.MplWidget.checkBoxMood.toggled.connect(self.updateGraph)
         self.ui.MplWidget.checkBoxAverageMood.toggled.connect(self.updateGraph)
-
 
         # запоминаем буфер обмена
         self.app = QApplication.instance()
@@ -119,6 +102,8 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         if self.ui.MplWidget.checkBoxMood.isChecked():
             self.ui.MplWidget.canvas.axes.plot(self.X, self.Y1, 'go-', linewidth=2, markersize=2)
+        else:
+            self.ui.MplWidget.canvas.axes.plot(self.X, self.Y1, alpha=0.0)
 
         if self.ui.MplWidget.checkBoxMoon.isChecked():
             self.ui.MplWidget.canvas.axes.plot(self.X2, self.Y2, color=[0, 0, 1], linewidth=2, alpha=0.5)
@@ -132,11 +117,11 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         """
         Метод чистит область графика
         """
-        self.ui.MplWidget.canvas.axes.clear()  # очищаем область для графика, иначе он сохранят старые отредактированные данные
+        self.ui.MplWidget.canvas.axes.clear()
         self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
 
-        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]:  # в случае остсутвия первой даты,
-            self.ui.MplWidget.canvas.axes.tick_params(  # ось Х оставить пустой
+        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]:
+            self.ui.MplWidget.canvas.axes.tick_params(
                 axis='x',
                 which='both',
                 bottom=False,
@@ -153,7 +138,7 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         self.Y1 = self._mModel.getMood()
         y2 = self._mModel.getMoon()
         self.X = []
-        for i in self._mModel.getDate():                      # переводим данные из формата QDate в строку
+        for i in self._mModel.getDate():
                 self.X.append(i.toString('dd.MM.yy'))
 
         new_x1 = []

@@ -36,9 +36,6 @@ class MoonPhase(QObject):
         """
         Метод считает фазы луны по датам
         """
-        # for date in self._mModel.Date:
-        #     date = date.toPyDate()
-        #     self.checkMoonPhase(date)
         date = date.toPyDate()
         if self.checkDateinQuarterPhase(date) is False:
             self.checkMoonPhase(date)

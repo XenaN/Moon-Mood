@@ -19,8 +19,6 @@ class MplWidget(QWidget):
 
         self.canvas = FigureCanvas(Figure())                    # создаем область где будет отрисовываться график
 
-
-
         self.canvas.axes = self.canvas.figure.add_subplot(111)   # создаем сам график
 
         self.initAxes(self.canvas.axes)                          # устанавливаем оси
@@ -30,8 +28,6 @@ class MplWidget(QWidget):
                                     bottom=False,      # ticks along the bottom edge are off
                                     top=False,         # ticks along the top edge are off
                                     labelbottom=False)
-
-
 
         self.createCheckBoxes()
         self.createScroll()
