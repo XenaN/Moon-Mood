@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore, Qt
+from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QWheelEvent
 
@@ -19,9 +19,7 @@ class MplWidget(QWidget):
 
         self.canvas = FigureCanvas(Figure())                    # создаем область где будет отрисовываться график
 
-        vertical_layout = QVBoxLayout()                          # создается лэйаут без отступов
-        vertical_layout.addWidget(self.canvas)
-        vertical_layout.setContentsMargins(0, 0, 0, 0)
+
 
         self.canvas.axes = self.canvas.figure.add_subplot(111)   # создаем сам график
 
@@ -33,14 +31,12 @@ class MplWidget(QWidget):
                                     top=False,         # ticks along the top edge are off
                                     labelbottom=False)
 
-        self.setLayout(vertical_layout)
 
-        self.scroll = QScrollBar(QtCore.Qt.Horizontal)
-        vertical_layout.addWidget(self.scroll)
-        self.steps_visible = 6.0
-        self.n = 0
-        self.maxScroll = 6
-        self.setupScrollArea()
+
+        self.createCheckBoxes()
+        self.createScroll()
+        self.createLayouts()
+
 
     def initAxes(self, figure):
         """
@@ -55,13 +51,55 @@ class MplWidget(QWidget):
 
         figure.xaxis.set_ticks_position('bottom')
 
+    def createCheckBoxes(self):
+        """
+        Метод создает чекбоксы для выбора отрисовки графиков
+        """
+        self.checkBoxMoon = QCheckBox(self)
+        self.checkBoxMoon.setText('Moon')
+        self.checkBoxMoon.setChecked(True)
+        self.checkBoxMood = QCheckBox(self)
+        self.checkBoxMood.setText('Mood')
+        self.checkBoxMood.setChecked(True)
+        self.checkBoxAverageMood = QCheckBox(self)
+        self.checkBoxAverageMood.setText('Average Mood (> 20 point)')
+        self.checkBoxAverageMood.setChecked(False)
+
+    def createScroll(self):
+        """
+        Метод создает скролл
+        """
+        self.scroll = QScrollBar(QtCore.Qt.Horizontal)
+        self.steps_visible = 6.0
+        self.n = 0
+        self.maxScroll = 6
+        self.setupScrollArea()
+        self.scroll.setEnabled(False)
+
+    def createLayouts(self):
+        """
+        Метод создает лейауты
+        """
+        self.horizontal_layout = QHBoxLayout()
+        self.horizontal_layout.addWidget(self.checkBoxMoon)
+        self.horizontal_layout.addWidget(self.checkBoxMood)
+        self.horizontal_layout.addWidget(self.checkBoxAverageMood)
+
+        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout.setContentsMargins(0, 0, 0, 0)
+        self.vertical_layout.addWidget(self.canvas)
+        self.vertical_layout.addWidget(self.scroll)
+        self.vertical_layout.addLayout(self.horizontal_layout)
+        self.setLayout(self.vertical_layout)
+
     def setStep(self, step):
         """
         Метод обновляет self.step
         """
-        self.steps_visible = step
-        self.scroll.setValue(0)
-        self.updateScrollArea(self.scroll.value())
+        if self.steps_visible != 6.0:
+            self.steps_visible = step
+            self.scroll.setValue(0)
+            self.updateScrollArea(self.scroll.value())
 
 
     def setMaxScroll(self, maximum):
@@ -84,10 +122,10 @@ class MplWidget(QWidget):
         Метод устанавливает новые границы для графика при движении скролла
         """
         if value == 0:                                      # set_lim утанавливает границы жестко, в том числе убирает смещение по оси x
-            if self.steps_visible == 6:                      # в итоге пересечение осей по значением происходит строго в координате 0,0
+            if self.steps_visible == 6:                     # в итоге пересечение осей по значением происходит строго в координате 0,0
                 left = -0.5                                 # для того, чтобы даты не наезжали на ось введено искусственно смещение на 0,5
             else:
-                left = self.steps_visible / -15 - 0.25       # это смещение меняется в зависимости от количества точек на оси
+                left = self.steps_visible / -15 - 0.25      # это смещение меняется в зависимости от количества точек на оси
 
             right = 0 + self.steps_visible
         else:
@@ -117,7 +155,7 @@ class MplWidget(QWidget):
             self.updateScrollArea(self.scroll.value())
 
         else:
-            if self.steps_visible == self.maxScroll:
+            if self.steps_visible == self.maxScroll or self.maxScroll == 0:
                 return
 
             step_coef = (self.steps_visible / self.maxScroll + 0.036) / 0.0312  # высчитаны коэффициенты по формуле линейной зависимости
@@ -136,5 +174,7 @@ class MplWidget(QWidget):
             self.scroll.setEnabled(False)
             self.scroll.setValue(0)
             self.updateScrollArea(self.scroll.value())
+        elif self.maxScroll == 0:
+            self.scroll.setEnabled(False)
         else:
             self.scroll.setEnabled(True)

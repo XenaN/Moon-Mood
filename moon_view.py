@@ -3,11 +3,13 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSlot
 import matplotlib.ticker as ticker
+from scipy.interpolate import BSpline, UnivariateSpline
+import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
 from moon_pyqtfile import Ui_MainWindow
-
+from moon_settings_widget import MoonSettingWidget
 
 # class MoonObserver(metaclass=ABCMeta):
 #     """
@@ -58,11 +60,17 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # связываем событие new file с методом открыть новый файл
         self.ui.newFile.triggered.connect(self._mController.openNewFile)
 
+        # связываем событие save as с методом сохранить данные как
+        self.ui.saveAsButton.triggered.connect(self._mController.saveAsData)
+
         # связываем событие save с методом сохранить данные
         self.ui.saveButton.triggered.connect(self._mController.saveData)
 
         # связываем событие open с методом открытия файла
         self.ui.openButton.triggered.connect(self._mController.openFile)
+
+        # связываем событие settings с окном настроек
+        # self.ui.settingsButton.triggered.connect(self.openSettings)
 
         # связываем событие изменения границ графка с отрисовкой графика
         self.ui.MplWidget.updateRequest.connect(self.onUpdateRequest)
@@ -72,6 +80,12 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         # связываем событие изменения модели с изменением размера таблицы
         self._mModel.rowCountChangedRequest.connect(self.rowCountChanged)
+
+        # связываем события изменений чекбоксов с отрисовкой графика
+        self.ui.MplWidget.checkBoxMoon.toggled.connect(self.updateGraph)
+        self.ui.MplWidget.checkBoxMood.toggled.connect(self.updateGraph)
+        self.ui.MplWidget.checkBoxAverageMood.toggled.connect(self.updateGraph)
+
 
         # запоминаем буфер обмена
         self.app = QApplication.instance()
@@ -90,27 +104,8 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         """
         Отрисовка графика
         """
-        x = []
-        y1 = self._mModel.getMood()
-        y2 = self._mModel.getMoon()
-        for i in self._mModel.getDate():                                 # переводим данные из формата QDate в строку
-            if i is not None:
-                x.append(i.toString('dd.MM.yy'))
-            else:
-                x.append(None)                                      # значение None пока появляется только в первой ячеке
-
-        a, b, c = len(x), len(y1), len(y2)
-
-        self.ui.MplWidget.canvas.axes.clear()                       # очищаем область для графика, иначе он сохранят старые отредактированные данные
-        self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
-
-        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]: # в случае остсутвия первой даты,
-            self.ui.MplWidget.canvas.axes.tick_params(                            # ось Х оставить пустой
-                                        axis='x',
-                                        which='both',
-                                        bottom=False,
-                                        top=False,
-                                        labelbottom=False)
+        self.correctionAxesValues()
+        self.resetFigure()
 
         if self.left is not None:                                          # меняем пределы при прокрутке скрола
             self.ui.MplWidget.canvas.axes.set_xlim(self.left, self.right)
@@ -118,9 +113,65 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
             if delta_lim >= 8.5:                                           # меняем количество тиков, когда график сильно сжимается
                 self.ui.MplWidget.canvas.axes.xaxis.set_major_locator(ticker.MaxNLocator(6))
 
-        self.ui.MplWidget.canvas.axes.plot(x, y1, 'go--', linewidth=2, markersize=2)  # создание графика
-        self.ui.MplWidget.canvas.axes.plot(x, y2, color=[0, 0, 1], linewidth=2)
-        self.ui.MplWidget.canvas.draw()                                               # его отрисовка
+        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]:
+            self.ui.MplWidget.canvas.draw()
+            return
+
+        if self.ui.MplWidget.checkBoxMood.isChecked():
+            self.ui.MplWidget.canvas.axes.plot(self.X, self.Y1, 'go-', linewidth=2, markersize=2)
+
+        if self.ui.MplWidget.checkBoxMoon.isChecked():
+            self.ui.MplWidget.canvas.axes.plot(self.X2, self.Y2, color=[0, 0, 1], linewidth=2, alpha=0.5)
+
+        if self.ui.MplWidget.checkBoxAverageMood.isChecked() and self._mModel.getLengthDate() > 15:
+            self.ui.MplWidget.canvas.axes.plot(self.X3, self.Y3, 'r-')
+
+        self.ui.MplWidget.canvas.draw()
+
+    def resetFigure(self):
+        """
+        Метод чистит область графика
+        """
+        self.ui.MplWidget.canvas.axes.clear()  # очищаем область для графика, иначе он сохранят старые отредактированные данные
+        self.ui.MplWidget.initAxes(self.ui.MplWidget.canvas.axes)
+
+        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]:  # в случае остсутвия первой даты,
+            self.ui.MplWidget.canvas.axes.tick_params(  # ось Х оставить пустой
+                axis='x',
+                which='both',
+                bottom=False,
+                top=False,
+                labelbottom=False)
+
+    def correctionAxesValues(self):
+        """
+        Метод изменяет массивы данных модели в соответствии с необходимым графиком
+        """
+        if self._mModel.getLengthDate() == 0 or self._mModel.getDate() == [None]:
+            return
+
+        self.Y1 = self._mModel.getMood()
+        y2 = self._mModel.getMoon()
+        self.X = []
+        for i in self._mModel.getDate():                      # переводим данные из формата QDate в строку
+                self.X.append(i.toString('dd.MM.yy'))
+
+        new_x1 = []
+        for i in range(0, len(self.X)):
+            new_x1.append(i)
+
+        if len(new_x1) > 7:
+            self.X2 = np.linspace(0, len(new_x1), len(new_x1) * 10)
+            spl = BSpline(new_x1, y2, k=3)
+            self.Y2 = spl(self.X2)
+
+            self.X3 = np.linspace(0, len(new_x1), len(new_x1)//5)
+            spl = BSpline(new_x1, self.Y1, k=1)
+            self.Y3 = spl(self.X3)
+
+        else:
+            self.X2 = self.X
+            self.Y2 = y2
 
     @pyqtSlot()
     def rowCountChanged(self):
@@ -191,3 +242,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
             if self.keyControlPressed:
                 self._mController.pasteDataSelectedRows()             #запускаем функцию для вставки текста
 
+    # def openSettings(self):
+    #     self.settings_widget = MoonSettingWidget()
+    #     self.settings_widget.show()

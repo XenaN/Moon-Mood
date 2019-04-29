@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 
-from mplwidget import MplWidget
+from moon_mplwidget import MplWidget
 
 
 
@@ -16,10 +16,11 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
+
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName("horizontalLayout")
+
         self.MplWidget = MplWidget(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -29,13 +30,14 @@ class Ui_MainWindow(object):
         self.MplWidget.setObjectName("MplWidget")
         self.MplWidget.setMinimumSize(QtCore.QSize(500, 300))
         self.horizontalLayout.addWidget(self.MplWidget)
+
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
         self.tableWidget.setSizePolicy(sizePolicy)
-        self.tableWidget.setMinimumSize(QtCore.QSize(302, 10))
+        self.tableWidget.setMinimumSize(QtCore.QSize(315, 300))
         self.tableWidget.setMaximumSize(QtCore.QSize(7000000, 15000000))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(2)
@@ -65,10 +67,19 @@ class Ui_MainWindow(object):
         self.openButton.setShortcut('Ctrl+O')
         self.fileMenu.addAction(self.openButton)
 
+        self.saveAsButton = QtWidgets.QAction(MainWindow)
+        self.saveAsButton.setText('Save as')
+        self.fileMenu.addAction(self.saveAsButton)
+
         self.saveButton = QtWidgets.QAction(MainWindow)
         self.saveButton.setText('Save')
         self.saveButton.setShortcut('Ctrl+S')
         self.fileMenu.addAction(self.saveButton)
+
+        # self.settingsButton = QtWidgets.QAction(MainWindow)
+        # self.settingsButton.setText('Settings')
+        # self.settingsButton.setShortcut('Ctrl+P')
+        # self.fileMenu.addAction(self.settingsButton)
 
         # self.statusbar = QtWidgets.QStatusBar(MainWindow)
         # self.statusbar.setObjectName("statusbar")

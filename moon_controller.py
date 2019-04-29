@@ -27,6 +27,9 @@ class MoonController(QObject):
         # создаем экземпляр класса формата даты
         self.c_date = QDate()
 
+        # имя файла
+        self.file_name = ''
+
         # запускаем визуальное представление??
         self._mView.show()
 
@@ -55,7 +58,7 @@ class MoonController(QObject):
             return
 
         self.c_date = self.c_date.fromString(new_data, "dd.MM.yyyy")  # данные из формата дата переводим в QDate
-        if self.c_date.isValid() is False:                            # если дата не подходящего вида оставляем ячейку пустой
+        if self.c_date.isValid() is False and item.row() == 0:        # если дата не подходящего вида оставляем ячейку пустой
             item.setText(None)
             return
 
@@ -67,8 +70,6 @@ class MoonController(QObject):
         else:
             self._mModel.addDate(self.c_date)                        # если добавляются новые данные
             self._mModel.addMood(None)
-            # if self._mModel.Mood == []:                            # обязательно добавляем значение None в Y
-            #     self._mModel.addMood(None)                         # чтобы график не вылетел
 
     def changeModelMood(self, item):
         """
@@ -108,20 +109,38 @@ class MoonController(QObject):
         self._mMoonPhase.setNullQuarterPhase()
         self._mView.ui.tableWidget.clearContents()
         self._mView.ui.tableWidget.setRowCount(1)
+        self._mView.ui.MplWidget.setMaxScroll(0)
 
     def openNewFile(self):
         """
         Метод вызывается при открытии нового файла
         """
+        self.file_name = []
         self.cleanAll()
-        self._mView.updateGraph()
         self._mView.ui.MplWidget.setStep(6.0)
+
+        self._mView.resetFigure()
+        self._mView.ui.MplWidget.canvas.draw()
+
+    def saveAsData(self):
+        """
+        Метод вызывается при сохранении данных
+        """
+        name = QtWidgets.QFileDialog.getSaveFileName(None, 'Save File', '', 'Mood Moon Files (*.mmf)')
+        self.file_name = name
+        if name[0] == '':
+            return
+
+        with open(name[0], 'w') as file:
+            for i in range(0, self._mModel.getLengthDate()):
+                    data = self._mModel.getDateString(i) + '\t' + str(self._mModel.getMood(i)) + '\n'
+                    file.write(data)
 
     def saveData(self):
         """
         Метод вызывается при сохранении данных
         """
-        name = QtWidgets.QFileDialog.getSaveFileName(None, 'Save File', '', 'Mood Moon Files (*.mmf)')
+        name = self.file_name
         if name[0] == '':
             return
 
@@ -135,6 +154,7 @@ class MoonController(QObject):
         Метод вызывается при открытии файла с сохраненными данными
         """
         name = QtWidgets.QFileDialog.getOpenFileName(None, "Open Mood and Moon File", "", "Mood Moon Files (*.mmf)")
+        self.file_name = name
         if name[0] == '':
             return
 
@@ -208,5 +228,6 @@ class MoonController(QObject):
             if self._mModel.getMood(-1) is not None:                         # проверка наличия последней пустой строки
                 self._mModel.addNextDate()
 
+            self._mView.ui.MplWidget.setMaxScroll(self._mModel.getRowCount())
             self._mView.dataFilling()                                     # запускаем заполнение таблицы
             self._mView.updateGraph()                                     # запускаем отрисовку графика
