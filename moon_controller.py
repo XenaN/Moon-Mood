@@ -38,7 +38,6 @@ class MoonController(QObject):
         Метод реагирует на сигнал
         Изменяет данные модели
         """
-        # print(item)
         if item.column() == 0:                                    # если данные забиты в столбце с датой
             self.changeModelDate(item)
 

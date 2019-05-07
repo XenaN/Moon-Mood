@@ -60,12 +60,12 @@ class MoonPhase(QObject):
             self.quarter_phase.pop()
 
     def checkDateinQuarterPhase(self, date):
-        finded = False
+        found = False
         if self.quarter_phase != []:
             for i in range(0, len(self.quarter_phase)):
                 if self.quarter_phase[i][0] == date:
-                    finded = True
-        return finded
+                    found = True
+        return found
 
 
     def checkMoonPhase(self, date):
@@ -117,7 +117,6 @@ class MoonPhase(QObject):
         for j in range(0, len(self.quarter_phase)-1):
             if self.quarter_phase[j][0] < date < self.quarter_phase[j+1][0]:
                 length = self.checkLengthQuater(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
-                print(self.quarter_phase[j+1][0], self.quarter_phase[j][0])
                 y = date - self.quarter_phase[j][0]
                 y = y.days - 1
                 side = self.checkSideQuarter(j, length)
@@ -126,8 +125,6 @@ class MoonPhase(QObject):
                 self._mModel.addMoon(self.quarter_phase[j][1])
             elif date == self.quarter_phase[j+1][0]:
                 self._mModel.addMoon(self.quarter_phase[j+1][1])
-            else:
-                continue
 
     def checkLengthQuater(self, date_phase1, date_phase2):
         """
