@@ -30,7 +30,7 @@ class MoonController(QObject):
         # имя файла
         self.file_name = ('',)
 
-        # запускаем визуальное представление??
+        # запускаем визуальное представление
         self._mView.show()
 
     def onItemChanged(self, item):

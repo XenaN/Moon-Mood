@@ -71,7 +71,7 @@ class MoonModel(QObject):
         """
         self.__Date.append(date)
         self.calculatePhaseRequest.emit(date)
-        self.rowCountChangedRequest.emit()
+        # self.rowCountChangedRequest.emit()
 
     def addNextDate(self):
         """

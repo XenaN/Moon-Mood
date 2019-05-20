@@ -3,7 +3,6 @@ import sys
 from PyQt5.QtWidgets import *
 import cProfile, pstats
 
-
 from moon_model import MoonModel
 from moon_controller import MoonController
 
