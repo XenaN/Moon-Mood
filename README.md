@@ -7,3 +7,8 @@ Program objectives are
   - to represent graph (sinusoid for moon, simple for mood)
   - to average mood-line
   - to request moon data
+***
+Current application version realizes all functions above.
+Future objectives:
+  - calculation optimization of graph painting
+  - to implement user-friendly interface
