@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import *
 import cProfile, pstats
 
@@ -12,11 +13,15 @@ def startMoon():
     Для работы с программой
     """
 
+    QCoreApplication.setOrganizationName('Xena')
+    QCoreApplication.setApplicationName('Moon')
+
     pr = cProfile.Profile()
     pr.enable()
     app = QApplication(sys.argv)
     model = MoonModel()
     controller = MoonController(model)
+    controller.openLastFile()
 
     result = app.exec_()
 
@@ -24,7 +29,7 @@ def startMoon():
     sortby = 'tottime'
     # ps = pstats.Stats(pr).strip_dirs().sort_stats(sortby)
     ps = pstats.Stats(pr).sort_stats(sortby)
-    ps.print_stats()
+    # ps.print_stats()
 
     sys.exit(result)
 
