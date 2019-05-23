@@ -91,4 +91,3 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Date"))
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Mood"))
-
