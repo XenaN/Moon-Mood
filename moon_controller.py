@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QObject, QDate
+from PyQt5.QtCore import Qt, QObject, QDate, QSettings, pyqtSignal
 from PyQt5.QtGui import QIntValidator
 from PyQt5 import QtWidgets
 
@@ -11,6 +11,10 @@ class MoonController(QObject):
     Класс MoonController представляет реализацию контроллера.
     Согласовывает работу представления с моделью.
     """
+
+    SETTING_WAY = 'Last opened moon app'
+    changedWindowTitle = pyqtSignal(str)
+
     def __init__(self, in_model):
         """
         Конструктор принимает ссылку на модель.
@@ -28,9 +32,15 @@ class MoonController(QObject):
         self.c_date = QDate()
 
         # имя файла
-        self.file_name = ('',)
+        self.file_name_for_save = ''
 
-        # запускаем визуальное представление??
+        self.opened_file_title = ''
+
+        # создаем QSettings для сохранения пути в реестре
+        self.settings = QSettings()
+        self.file_name_from_qsettings = self.settings.value(self.SETTING_WAY, '', str)
+
+        # запускаем визуальное представление
         self._mView.show()
 
     def onItemChanged(self, item):
@@ -110,11 +120,32 @@ class MoonController(QObject):
         self._mView.ui.tableWidget.setRowCount(1)
         self._mView.ui.MplWidget.setMaxScroll(0)
 
+    def save_file_name(self, name):
+        """
+        Метод сохраняет путь до файла в реестре
+        """
+        self.settings.setValue(self.SETTING_WAY, name)
+
+    def get_file_name_title(self, name):
+        """
+        Метод достает из строки пути до файла название самого файла
+        для отображения в назании программы
+        """
+        name = name.split('/')
+        if name[-1].endswith('mmf'):
+            name[-1] = ' (' + name[-1][:-4] + ')'
+            return name[-1]
+        else:
+            return
+
     def openNewFile(self):
         """
         Метод вызывается при открытии нового файла
         """
-        self.file_name = ('',)
+        self.file_name_for_save = ''
+        self.opened_file_title = ''
+        self.changedWindowTitle.emit(self.opened_file_title)
+
         self.cleanAll()
         self._mView.ui.MplWidget.setStep(6.0)
 
@@ -126,7 +157,10 @@ class MoonController(QObject):
         Метод вызывается при сохранении данных
         """
         name = QtWidgets.QFileDialog.getSaveFileName(None, 'Save File', '', 'Mood Moon Files (*.mmf)')
-        self.file_name = name
+        self.file_name_for_save = name[0]
+        self.opened_file_title = self.get_file_name_title(self.file_name_for_save)
+        self.changedWindowTitle.emit(self.opened_file_title)
+
         if name[0] == '':
             return
 
@@ -134,31 +168,35 @@ class MoonController(QObject):
             for i in range(0, self._mModel.getLengthDate()):
                     data = self._mModel.getDateString(i) + '\t' + str(self._mModel.getMood(i)) + '\n'
                     file.write(data)
+
+        self.save_file_name(self.file_name_for_save)
 
     def saveData(self):
         """
         Метод вызывается при сохранении данных
         """
-        if self.file_name[0] == '':
+        if self.file_name_for_save == '':
+            self.saveAsData()
             return
 
-        name = self.file_name
+        name = self.file_name_for_save
 
-        with open(name[0], 'w') as file:
+        with open(name, 'w') as file:
             for i in range(0, self._mModel.getLengthDate()):
                     data = self._mModel.getDateString(i) + '\t' + str(self._mModel.getMood(i)) + '\n'
                     file.write(data)
 
-    def openFile(self):
+    def openFileWithName(self, file_name):
         """
-        Метод вызывается при открытии файла с сохраненными данными
+        Метод открывает переданный файл
         """
-        name = QtWidgets.QFileDialog.getOpenFileName(None, "Open Mood and Moon File", "", "Mood Moon Files (*.mmf)")
-        self.file_name = name
-        if name[0] == '':
+        if file_name == '':
             return
 
-        with open(name[0], 'r') as file:
+        self.opened_file_title = self.get_file_name_title(file_name)
+        self.changedWindowTitle.emit(self.opened_file_title)
+
+        with open(file_name, 'r') as file:
             data = file.read()
             data = data.split('\n')
             data = data[:-1]
@@ -168,6 +206,21 @@ class MoonController(QObject):
 
         self._mView.ui.MplWidget.setStep(6.0)
 
+    def openFile(self):
+        """
+        Метод вызывается при открытии файла с сохраненными данными
+        """
+        name = QtWidgets.QFileDialog.getOpenFileName(None, "Open Mood and Moon File", "", "Mood Moon Files (*.mmf)")
+        self.file_name_for_save = name[0]
+
+        self.openFileWithName(self.file_name_for_save)
+        self.save_file_name(self.file_name_for_save)
+
+    def openLastFile(self):
+        """
+        Метод запускает открытие последнего закрытого файла
+        """
+        self.openFileWithName(self.file_name_from_qsettings)
 
     def copyDataSelectedRows(self):
         """

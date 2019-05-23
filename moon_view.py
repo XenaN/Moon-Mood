@@ -31,8 +31,10 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         super(QMainWindow, self).__init__(parent)
         self._mController = in_controller
         self._mModel = in_model
-        self.left = None                                           # переменная для границы графика, пока их не поменяет скролл
-        self.right = None                                          # переменная для границы графика, пока их не поменяет скролл
+
+        # переменные для границы графика, пока их не поменяет скролл
+        self.left = None
+        self.right = None
 
         # подключаем визуальное представление
         self.ui = Ui_MainWindow()
@@ -40,6 +42,9 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
 
         # название программы
         self.setWindowTitle("Moon-Mood")
+
+        # связываем событие открытия/сохранения нового файла с изменением названия программы
+        self._mController.changedWindowTitle.connect(self.setNewWindowTitle)
 
         # связываем событие завершения редактирования с методом контроллера
         self.ui.tableWidget.itemChanged.connect(self._mController.onItemChanged, type=Qt.QueuedConnection)
@@ -73,6 +78,14 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         # запоминаем буфер обмена
         self.app = QApplication.instance()
         self.clipboard = QApplication.clipboard()
+
+    @pyqtSlot(str)
+    def setNewWindowTitle(self, name):
+        """
+        Метод меняет имя файла
+        """
+        name_application = "Moon-Mood" + name
+        self.setWindowTitle(name_application)
 
     @pyqtSlot(float, float)
     def onUpdateRequest(self, left, right):
@@ -164,7 +177,6 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         Метод вызывается при изменении модели.
         Изменяет количество строк.
         """
-
         row_count = int(self._mModel.getRowCount())
         self.ui.MplWidget.setMaxScroll(row_count)
         self.ui.tableWidget.setRowCount(row_count)      # создаем количество строк
@@ -173,6 +185,10 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         z = row_count - 1
         item = QTableWidgetItem(self._mModel.getDateString(z))  # создаем новую ячейку с датой на день больше предыдущей
         self.ui.tableWidget.setItem(row_count-1, 0, item)
+
+        row = self.ui.tableWidget.selectedItems()               # выделяем следующую ячейку
+        next_row = row[0].row() + 1
+        self.ui.tableWidget.setCurrentCell(next_row, 1)
 
         self.ui.tableWidget.blockSignals(False)
 
@@ -226,7 +242,3 @@ class MoonView(QMainWindow, metaclass=MoonMeta):
         if event.key() == Qt.Key_V:
             if self.keyControlPressed:
                 self._mController.pasteDataSelectedRows()             #запускаем функцию для вставки текста
-
-    # def openSettings(self):
-    #     self.settings_widget = MoonSettingWidget()
-    #     self.settings_widget.show()
