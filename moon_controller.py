@@ -280,13 +280,17 @@ class MoonController(QObject):
 
 
 
-        if self._mModel.getDate() != [] or self._mModel.getMood() != []:    # провека не полностью ли таблица пустая
-            self._mModel.setRowCount(self._mModel.getLengthDate())  # сохраянем в модель число строк
-            if self._mModel.getMood(-1) is not None:                        # проверка наличия последней пустой строки
-                self._mModel.addNextDate()
+        if self._mModel.getDate() != [] or self._mModel.getMood() != []:      # провека не полностью ли таблица пустая
+            self._mModel.setRowCount(self._mModel.getLengthDate())            # сохраянем в модель число строк
+            # if self._mModel.getMood(-1) is not None:                        # проверка наличия последней пустой строки
+            #     self._mModel.addNextDate()
 
             self._mView.ui.MplWidget.setMaxScroll(self._mModel.getRowCount())
             self._mView.dataFilling()                                       # запускаем заполнение таблицы
+
+            if self._mModel.getMood(-1) is not None:                        # проверка наличия последней пустой строки
+                self._mModel.addNextDate()
+
             self._mView.updateGraph()                                       # запускаем отрисовку графика
 
         else:
